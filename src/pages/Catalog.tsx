@@ -368,43 +368,43 @@ const Catalog = () => {
         )}
 
         {!isLoading && !isError && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {filteredStones.map((stone) => (
-              <StoneCard
-                key={stone.id}
-                stone={stone}
-                imageUrl={getImageUrl(stone.image_filename)}
-                isUploading={!!uploadingImages[stone.id]}
-                onEdit={handleEdit}
-                onDelete={handleDelete}
-                onImageUpload={handleImageUpload}
-                onImageZoom={handleImageZoom}
-              />
-            ))}
-          </div>
-        )}
-
-        {!isLoading && !isError && filteredStones.length === 0 && stones.length > 0 && (
-          <div className="text-center py-12">
-            <p className="text-gray-500 text-lg">
-              Nenhuma pedra encontrada com os filtros aplicados.
-            </p>
-            <Button variant="outline" onClick={clearFilters} className="mt-4">
-              Limpar Filtros
-            </Button>
-          </div>
-        )}
-
-        {!isLoading && !isError && stones.length === 0 && (
-          <div className="text-center py-12">
-            <p className="text-gray-500 text-lg">
-              Nenhuma pedra encontrada no catálogo. Adicione algumas pedras para começar.
-            </p>
-            <Button onClick={handleAdd} className="mt-4">
-              <Plus className="mr-2 h-4 w-4" />
-              Adicionar Primeira Pedra
-            </Button>
-          </div>
+          <>
+            {filteredStones.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {filteredStones.map((stone) => (
+                  <StoneCard
+                    key={stone.id}
+                    stone={stone}
+                    imageUrl={getImageUrl(stone.image_filename)}
+                    isUploading={!!uploadingImages[stone.id]}
+                    onEdit={handleEdit}
+                    onDelete={handleDelete}
+                    onImageUpload={handleImageUpload}
+                    onImageZoom={handleImageZoom}
+                  />
+                ))}
+              </div>
+            ) : stones.length > 0 ? (
+              <div className="text-center py-12">
+                <p className="text-gray-500 text-lg">
+                  Nenhuma pedra encontrada com os filtros aplicados.
+                </p>
+                <Button variant="outline" onClick={clearFilters} className="mt-4">
+                  Limpar Filtros
+                </Button>
+              </div>
+            ) : (
+              <div className="text-center py-12">
+                <p className="text-gray-500 text-lg">
+                  Nenhuma pedra encontrada no catálogo. Adicione algumas pedras para começar.
+                </p>
+                <Button onClick={handleAdd} className="mt-4">
+                  <Plus className="mr-2 h-4 w-4" />
+                  Adicionar Primeira Pedra
+                </Button>
+              </div>
+            )}
+          </>
         )}
 
         <ImageZoomModal imageUrl={zoomedImage} onClose={closeZoom} />

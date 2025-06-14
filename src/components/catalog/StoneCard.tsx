@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Edit, Trash2, Upload, ZoomIn } from 'lucide-react';
 import { Stone } from './types';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 
 interface StoneCardProps {
   stone: Stone;
@@ -26,21 +27,18 @@ const StoneCard: React.FC<StoneCardProps> = ({
   onImageZoom,
 }) => {
   return (
-    <div className="produto border border-gray-200 rounded-lg overflow-hidden shadow-lg bg-white">
-      <div className="p-6">
-        <h1 className="text-2xl font-bold text-gray-800 border-b-2 border-gray-800 pb-3 mb-4">
+    <Card className="produto flex flex-col h-full">
+      <CardHeader>
+        <CardTitle className="border-b border-gray-200 pb-3">
           {stone.name}
-        </h1>
-        
-        <div className="font-bold text-lg mb-6">
-          Item Name: {stone.name}
-        </div>
-        
-        <div className="text-center my-8 relative">
-          <img 
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="flex-grow space-y-4">
+        <div className="text-center relative">
+          <img
             src={imageUrl}
             alt={stone.name}
-            className="w-full h-64 object-cover mx-auto border border-gray-300 rounded-lg shadow-lg cursor-pointer"
+            className="w-full h-64 object-cover mx-auto border border-gray-300 rounded-lg shadow-md cursor-pointer"
             onClick={() => onImageZoom(imageUrl)}
             onError={(e) => {
               const target = e.target as HTMLImageElement;
@@ -50,7 +48,7 @@ const StoneCard: React.FC<StoneCardProps> = ({
           <Button
             variant="outline"
             size="sm"
-            className="absolute top-2 right-2"
+            className="absolute top-2 right-2 bg-white/70 hover:bg-white"
             onClick={() => onImageZoom(imageUrl)}
           >
             <ZoomIn className="h-4 w-4" />
@@ -70,7 +68,7 @@ const StoneCard: React.FC<StoneCardProps> = ({
               id={`upload-${stone.id}`}
               disabled={isUploading}
             />
-            <Label htmlFor={`upload-${stone.id}`} className="text-sm text-gray-500 cursor-pointer hover:underline flex items-center justify-center">
+            <Label htmlFor={`upload-${stone.id}`} className="text-sm text-gray-600 cursor-pointer hover:underline flex items-center justify-center">
               {isUploading ? (
                   <>
                     <Upload className="mr-2 h-4 w-4 animate-spin" />
@@ -86,38 +84,38 @@ const StoneCard: React.FC<StoneCardProps> = ({
           </div>
         </div>
         
-        <div className="bg-gray-100 p-6 rounded-lg">
-          <strong className="text-lg">Technical Specifications:</strong>
-          <ul className="mt-4 space-y-2 pl-6">
-            <li><strong>Category:</strong> {stone.category}</li>
-            <li><strong>Rock type:</strong> {stone.rock_type}</li>
-            <li><strong>Available finishes:</strong> {stone.finishes}</li>
-            <li><strong>Available in:</strong> {stone.available_in}</li>
-            <li><strong>Base color:</strong> {stone.base_color}</li>
-            <li><strong>Characteristics:</strong> {stone.characteristics}</li>
+        <div className="bg-gray-50 p-4 rounded-lg">
+          <strong className="text-md font-semibold">Especificações Técnicas:</strong>
+          <ul className="mt-3 space-y-1 text-sm text-gray-700 list-disc pl-5">
+            <li><strong>Categoria:</strong> {stone.category}</li>
+            <li><strong>Tipo de Rocha:</strong> {stone.rock_type}</li>
+            <li><strong>Acabamentos:</strong> {stone.finishes}</li>
+            <li><strong>Disponível em:</strong> {stone.available_in}</li>
+            <li><strong>Cor Base:</strong> {stone.base_color}</li>
+            <li><strong>Características:</strong> {stone.characteristics}</li>
           </ul>
         </div>
+      </CardContent>
 
-        <div className="flex justify-between mt-4">
-          <Button 
-            variant="secondary"
-            size="sm"
-            onClick={() => onEdit(stone)}
-          >
-            <Edit className="mr-2 h-4 w-4" />
-            Editar
-          </Button>
-          <Button 
-            variant="destructive"
-            size="sm"
-            onClick={() => onDelete(stone.id)}
-          >
-            <Trash2 className="mr-2 h-4 w-4" />
-            Deletar
-          </Button>
-        </div>
-      </div>
-    </div>
+      <CardFooter className="flex justify-between">
+        <Button 
+          variant="secondary"
+          size="sm"
+          onClick={() => onEdit(stone)}
+        >
+          <Edit className="mr-2 h-4 w-4" />
+          Editar
+        </Button>
+        <Button 
+          variant="destructive"
+          size="sm"
+          onClick={() => onDelete(stone.id)}
+        >
+          <Trash2 className="mr-2 h-4 w-4" />
+          Deletar
+        </Button>
+      </CardFooter>
+    </Card>
   );
 };
 
