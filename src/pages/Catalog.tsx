@@ -22,43 +22,58 @@ const Catalog = () => {
   const { data: fetchedStones, isLoading, isError, error } = useQuery<Stone[]>({
     queryKey: ['stones'],
     queryFn: async () => {
-      console.log('Fetching stones from database...');
-      const { data, error } = await supabase
+      console.log('--- NEW FETCH ATTEMPT ---');
+      const { data, error: fetchError, status, statusText } = await supabase
         .from('aralogo_simples')
         .select('*')
         .order('id', { ascending: true });
 
-      if (error) {
-        console.error('Error fetching stones:', error);
+      console.log('Supabase response status:', status, statusText);
+      console.log('Supabase response error:', fetchError);
+      console.log('Supabase raw data:', data);
+
+      if (fetchError) {
+        console.error('Error fetching stones:', fetchError.message);
         toast({
           title: "Erro ao buscar dados",
-          description: "Não foi possível carregar o catálogo do banco de dados.",
+          description: `Não foi possível carregar o catálogo: ${fetchError.message}`,
           variant: "destructive",
         });
-        throw new Error(error.message);
+        throw new Error(fetchError.message);
       }
       
       if (!data) {
-        console.log('No data returned from database');
+        console.log('No data object in response from Supabase.');
+        return [];
+      }
+      
+      if (data.length === 0) {
+        console.log('Data array from Supabase is empty.');
         return [];
       }
 
-      console.log('Raw data from database:', data);
+      console.log(`Found ${data.length} stones raw from DB. Mapping them now.`);
 
-      const mappedStones = data.map(stone => ({
-        id: stone.id.toString(),
-        name: stone['Nome'] || 'Nome não disponível',
-        category: stone['Categoria'] || 'Sem categoria',
-        rock_type: stone['Tipo de Rocha'] || 'Não especificado',
-        finishes: stone['Acabamentos Disponíveis'] || 'Não especificado',
-        available_in: stone['Disponível em'] || 'Não especificado',
-        base_color: stone['Cor Base'] || 'Não especificado',
-        characteristics: stone['Características'] || 'Sem descrição',
-        image_filename: stone['Imagem_Name_Site'] || '',
-        image_url: '',
-      }));
+      const mappedStones = data.map(stone => {
+        if (!stone || typeof stone.id === 'undefined' || stone.id === null) {
+            console.warn('Skipping an invalid stone object from DB:', stone);
+            return null;
+        }
+        return {
+            id: stone.id.toString(),
+            name: stone['Nome'] || 'Nome não disponível',
+            category: stone['Categoria'] || 'Sem categoria',
+            rock_type: stone['Tipo de Rocha'] || 'Não especificado',
+            finishes: stone['Acabamentos Disponíveis'] || 'Não especificado',
+            available_in: stone['Disponível em'] || 'Não especificado',
+            base_color: stone['Cor Base'] || 'Não especificado',
+            characteristics: stone['Características'] || 'Sem descrição',
+            image_filename: stone['Imagem_Name_Site'] || '',
+            image_url: '',
+        };
+      }).filter(Boolean) as Stone[];
 
-      console.log('Mapped stones:', mappedStones);
+      console.log('Mapped stones ready for the app:', mappedStones);
       return mappedStones;
     }
   });
@@ -390,7 +405,7 @@ const Catalog = () => {
                 {filteredStones.length > 0 ? (
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                     {filteredStones.map((stone) => {
-                      console.log('Rendering stone:', stone);
+                      console.log('Rendering StoneCard for:', stone.name);
                       return (
                         <StoneCard
                           key={stone.id}
