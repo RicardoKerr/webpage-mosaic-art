@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -6,6 +7,7 @@ import { ArrowLeft, Filter, Search, ZoomIn, ZoomOut, ChevronLeft, ChevronRight, 
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { useImageUpload } from '@/hooks/useImageUpload';
 
 interface Stone {
   id: string;
@@ -50,6 +52,7 @@ const fetchStones = async (): Promise<Stone[]> => {
 
 const StoneViewer = () => {
   const navigate = useNavigate();
+  const { getImageUrl } = useImageUpload();
   
   const { data: stones = [], isLoading, isError } = useQuery<Stone[]>({
     queryKey: ['aralogo_simples'],
@@ -256,16 +259,20 @@ const StoneViewer = () => {
                     
                     <div className="text-center my-8 relative">
                       <img 
-                        src={stone.image_url} 
+                        src={getImageUrl(stone.image_url)} 
                         alt={stone.name}
                         className="w-full h-64 object-cover mx-auto border border-gray-300 rounded-lg shadow-lg cursor-pointer"
-                        onClick={() => handleImageZoom(stone.image_url)}
+                        onClick={() => handleImageZoom(getImageUrl(stone.image_url))}
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.src = '/placeholder.svg';
+                        }}
                       />
                       <Button
                         variant="outline"
                         size="sm"
                         className="absolute top-2 right-2"
-                        onClick={() => handleImageZoom(stone.image_url)}
+                        onClick={() => handleImageZoom(getImageUrl(stone.image_url))}
                       >
                         <ZoomIn className="h-4 w-4" />
                       </Button>

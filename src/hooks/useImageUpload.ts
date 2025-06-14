@@ -50,7 +50,21 @@ export const useImageUpload = () => {
     }
   };
 
-  // Retorna a função de upload e um booleano indicando se o Supabase está configurado.
-  // Como estamos importando o cliente diretamente, ele deve estar sempre configurado se o app estiver funcionando.
-  return { uploadImage, isSupabaseConfigured: !!supabase };
+  // Função para gerar URL da imagem no bucket baseada no filename
+  const getImageUrl = (filename: string): string => {
+    if (!filename) return '/placeholder.svg';
+    
+    // Remove o caminho "./images/" se existir e extrai apenas o nome do arquivo
+    const cleanFilename = filename.replace('./images/', '');
+    
+    // Gera a URL pública do Supabase Storage
+    const { data } = supabase.storage
+      .from(bucketName)
+      .getPublicUrl(cleanFilename);
+    
+    return data?.publicUrl || '/placeholder.svg';
+  };
+
+  // Retorna a função de upload, função para obter URLs e um booleano indicando se o Supabase está configurado.
+  return { uploadImage, getImageUrl, isSupabaseConfigured: !!supabase };
 };
