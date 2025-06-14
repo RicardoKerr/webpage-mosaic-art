@@ -85,8 +85,8 @@ const Catalog = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false);
   const [isEditSelectOpen, setIsEditSelectOpen] = useState(false);
-  const [filterCategory, setFilterCategory] = useState<string>('');
-  const [filterRockType, setFilterRockType] = useState<string>('');
+  const [filterCategory, setFilterCategory] = useState<string>('all');
+  const [filterRockType, setFilterRockType] = useState<string>('all');
   const [searchTerm, setSearchTerm] = useState<string>('');
   const { toast } = useToast();
 
@@ -109,8 +109,8 @@ const Catalog = () => {
 
   // Pedras filtradas
   const filteredStones = stones.filter(stone => {
-    const matchesCategory = !filterCategory || stone.category === filterCategory;
-    const matchesRockType = !filterRockType || stone.rock_type === filterRockType;
+    const matchesCategory = filterCategory === 'all' || stone.category === filterCategory;
+    const matchesRockType = filterRockType === 'all' || stone.rock_type === filterRockType;
     const matchesSearch = !searchTerm || 
       stone.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       stone.characteristics.toLowerCase().includes(searchTerm.toLowerCase());
@@ -176,8 +176,8 @@ const Catalog = () => {
   };
 
   const clearFilters = () => {
-    setFilterCategory('');
-    setFilterRockType('');
+    setFilterCategory('all');
+    setFilterRockType('all');
     setSearchTerm('');
   };
 
@@ -213,7 +213,7 @@ const Catalog = () => {
                   <SelectValue placeholder="Filtrar por categoria" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Todas as categorias</SelectItem>
+                  <SelectItem value="all">Todas as categorias</SelectItem>
                   {categories.map(category => (
                     <SelectItem key={category} value={category}>{category}</SelectItem>
                   ))}
@@ -224,7 +224,7 @@ const Catalog = () => {
                   <SelectValue placeholder="Filtrar por tipo de rocha" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Todos os tipos</SelectItem>
+                  <SelectItem value="all">Todos os tipos</SelectItem>
                   {rockTypes.map(type => (
                     <SelectItem key={type} value={type}>{type}</SelectItem>
                   ))}
