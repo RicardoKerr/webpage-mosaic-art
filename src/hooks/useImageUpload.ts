@@ -78,7 +78,6 @@ export const useImageUpload = () => {
         'Amazônia Dourada': 'image_8.png',
         'Mármore Imperial': 'image_9.png',
         'Ondas de Copacabana': 'image_10.png',
-        'Luz Branca': 'image_100.jpg',
         'Ágata Brasileira': 'image_11.jpeg',
         'Mármore Clássico': 'image_12.jpeg',
         'Granito Imperial': 'image_13.jpeg',
@@ -168,7 +167,7 @@ export const useImageUpload = () => {
         'Granito Seguro': 'image_97.jpeg',
         'Pedra Segura': 'image_98.jpeg',
         'Mármore Garantido': 'image_99.jpeg',
-        'Carajás Green': 'image_150.jpeg',
+        'Luz Branca': 'image_100.jpg',
         'Granito Garantido': 'image_101.jpeg',
         'Pedra Garantida': 'image_102.jpeg',
         'Mármore Certificado': 'image_103.jpeg',
@@ -218,6 +217,7 @@ export const useImageUpload = () => {
         'Pedra Transparente': 'image_147.jpeg',
         'Mármore Cristalino': 'image_148.jpeg',
         'Granito Cristalino': 'image_149.jpeg',
+        'Carajás Green': 'image_150.jpeg',
         'Pedra Cristalina': 'image_151.jpeg',
         'Mármore Brilhoso': 'image_152.jpeg',
         'Granito Brilhoso': 'image_153.jpeg',
@@ -228,8 +228,8 @@ export const useImageUpload = () => {
         'Mármore Lustrado': 'image_158.jpeg',
         'Granito Lustrado': 'image_159.jpeg',
         'Pedra Lustrada': 'image_160.jpeg',
-        'Mármore Refinado': 'image_161.jpeg',
-        'Granito Refinado': 'image_162.jpeg',
+        'Mármore Refinado (A)': 'image_161.jpeg',
+        'Granito Refinado (A)': 'image_162.jpeg',
         'Pedra Refinada': 'image_163.jpeg',
         'Mármore Lapidado': 'image_164.jpeg',
         'Granito Lapidado': 'image_165.jpeg',
@@ -245,7 +245,6 @@ export const useImageUpload = () => {
         'Pedra Modelada': 'image_175.jpeg',
         'Mármore Formado': 'image_176.jpeg',
         'Ouro de Jatoba': 'image_192.webp'
-        // Adicione mais mapeamentos conforme necessário
       };
       
       filename = stoneToImageMap[imagePathOrName] || `${imagePathOrName.toLowerCase().replace(/\s+/g, '_')}.webp`;
