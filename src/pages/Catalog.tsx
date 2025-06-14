@@ -7,6 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { ArrowLeft, Edit, Trash2, Plus, Upload } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useImageUpload } from '@/hooks/useImageUpload';
+import { useToast } from '@/hooks/use-toast';
 
 // Dados de exemplo baseados na tabela completa fornecida
 const exampleStones = [
@@ -98,12 +99,22 @@ interface Stone {
 }
 
 const Catalog = () => {
+  console.log('=== RENDERIZANDO CATALOG ===');
+  
   const navigate = useNavigate();
   const { uploadImage } = useImageUpload();
+  const { toast } = useToast();
   const [stones, setStones] = useState<Stone[]>(exampleStones);
   const [editingStone, setEditingStone] = useState<Stone | null>(null);
   const [isAddingNew, setIsAddingNew] = useState(false);
   const [uploadingImages, setUploadingImages] = useState<{[key: string]: boolean}>({});
+
+  console.log('Estados atuais:', {
+    stonesCount: stones.length,
+    editingStone: editingStone?.id,
+    isAddingNew,
+    uploadingImagesKeys: Object.keys(uploadingImages)
+  });
 
   const existingCategories = [...new Set(stones.map(stone => stone.category))];
   const existingRockTypes = [...new Set(stones.map(stone => stone.rock_type))];
@@ -124,29 +135,64 @@ const Catalog = () => {
   };
 
   const handleImageUpload = async (file: File, stoneId: string) => {
-    setUploadingImages(prev => ({ ...prev, [stoneId]: true }));
+    console.log('=== INÍCIO handleImageUpload ===');
+    console.log('Stone ID:', stoneId, 'Arquivo:', file.name);
+    
+    setUploadingImages(prev => {
+      console.log('Marcando como uploading:', stoneId);
+      return { ...prev, [stoneId]: true };
+    });
     
     try {
       const fileName = `image_${stoneId}.${file.name.split('.').pop()}`;
+      console.log('Nome do arquivo gerado:', fileName);
+      
       const imageUrl = await uploadImage(file, fileName);
+      console.log('URL retornada do upload:', imageUrl);
       
       if (imageUrl) {
-        setStones(prevStones => 
-          prevStones.map(stone => 
+        console.log('Atualizando estado dos stones...');
+        setStones(prevStones => {
+          const newStones = prevStones.map(stone => 
             stone.id === stoneId 
               ? { ...stone, image_url: imageUrl, image_filename: fileName }
               : stone
-          )
-        );
+          );
+          console.log('Stones atualizados:', newStones.length);
+          return newStones;
+        });
         
         if (editingStone && editingStone.id === stoneId) {
+          console.log('Atualizando editingStone...');
           setEditingStone(prev => prev ? { ...prev, image_url: imageUrl, image_filename: fileName } : null);
         }
+
+        toast({
+          title: "Sucesso",
+          description: "Imagem enviada com sucesso!",
+        });
+      } else {
+        toast({
+          title: "Erro",
+          description: "Falha ao enviar imagem. Tente novamente.",
+          variant: "destructive",
+        });
       }
     } catch (error) {
-      console.error('Error uploading image:', error);
+      console.error('ERRO em handleImageUpload:', error);
+      toast({
+        title: "Erro",
+        description: "Erro inesperado ao enviar imagem.",
+        variant: "destructive",
+      });
     } finally {
-      setUploadingImages(prev => ({ ...prev, [stoneId]: false }));
+      console.log('Removendo status de uploading para:', stoneId);
+      setUploadingImages(prev => {
+        const newState = { ...prev };
+        delete newState[stoneId];
+        return newState;
+      });
+      console.log('=== FIM handleImageUpload ===');
     }
   };
 
@@ -204,6 +250,8 @@ const Catalog = () => {
     setEditingStone(null);
     setIsAddingNew(false);
   };
+
+  console.log('Renderizando componente. EditingStone:', !!editingStone, 'IsAddingNew:', isAddingNew);
 
   if (editingStone || isAddingNew) {
     const currentStone = editingStone || {
