@@ -27,19 +27,19 @@ const StoneCard: React.FC<StoneCardProps> = ({
   onImageZoom,
 }) => {
   return (
-    <Card className="produto flex flex-col h-full">
+    <Card className="produto flex flex-col h-full bg-white border border-gray-200 rounded-lg shadow-lg">
       <CardContent className="p-6 flex-grow flex flex-col space-y-4">
-        <h3 className="text-2xl font-semibold leading-none tracking-tight border-b border-gray-200 pb-3">
+        <h3 className="text-xl font-bold text-gray-900 border-b border-gray-200 pb-3">
           {stone.name}
         </h3>
         
-        <p className="text-sm text-muted-foreground"><strong>Item Name:</strong> {stone.name}</p>
+        <p className="text-sm text-gray-600"><strong>Item Name:</strong> {stone.name}</p>
 
         <div className="text-center relative">
           <img
             src={imageUrl}
             alt={stone.name}
-            className="w-full h-64 object-cover mx-auto border border-gray-300 rounded-lg shadow-md cursor-pointer"
+            className="w-full h-48 object-cover mx-auto border border-gray-300 rounded-lg shadow-md cursor-pointer"
             onClick={() => onImageZoom(imageUrl)}
             onError={(e) => {
               const target = e.target as HTMLImageElement;
@@ -49,7 +49,7 @@ const StoneCard: React.FC<StoneCardProps> = ({
           <Button
             variant="outline"
             size="sm"
-            className="absolute top-2 right-2 bg-white/70 hover:bg-white"
+            className="absolute top-2 right-2 bg-white/90 hover:bg-white shadow-md"
             onClick={() => onImageZoom(imageUrl)}
           >
             <ZoomIn className="h-4 w-4" />
@@ -69,7 +69,7 @@ const StoneCard: React.FC<StoneCardProps> = ({
               id={`upload-${stone.id}`}
               disabled={isUploading}
             />
-            <Label htmlFor={`upload-${stone.id}`} className="text-sm text-gray-600 cursor-pointer hover:underline flex items-center justify-center">
+            <Label htmlFor={`upload-${stone.id}`} className="text-sm text-blue-600 cursor-pointer hover:text-blue-800 hover:underline flex items-center justify-center">
               {isUploading ? (
                   <>
                     <Upload className="mr-2 h-4 w-4 animate-spin" />
@@ -78,7 +78,7 @@ const StoneCard: React.FC<StoneCardProps> = ({
                 ) : (
                   <>
                     <Upload className="mr-2 h-4 w-4" />
-                    <span>{stone.image_filename ? stone.image_filename : "Adicionar Imagem"}</span>
+                    <span>Trocar Imagem</span>
                   </>
                 )}
             </Label>
@@ -86,14 +86,14 @@ const StoneCard: React.FC<StoneCardProps> = ({
         </div>
         
         <div className="bg-gray-50 p-4 rounded-lg mt-auto">
-          <strong className="text-md font-semibold">Technical Specifications:</strong>
+          <strong className="text-md font-semibold text-gray-900">Technical Specifications:</strong>
           <ul className="mt-3 space-y-1 text-sm text-gray-700">
-            <li><strong>Category:</strong> {stone.category}</li>
-            <li><strong>Rock type:</strong> {stone.rock_type}</li>
-            <li><strong>Available finishes:</strong> {stone.finishes}</li>
-            <li><strong>Available in:</strong> {stone.available_in}</li>
-            <li><strong>Base color:</strong> {stone.base_color}</li>
-            <li><strong>Characteristics:</strong> {stone.characteristics}</li>
+            <li><strong>Category:</strong> {stone.category || 'N/A'}</li>
+            <li><strong>Rock type:</strong> {stone.rock_type || 'N/A'}</li>
+            <li><strong>Available finishes:</strong> {stone.finishes || 'N/A'}</li>
+            <li><strong>Available in:</strong> {stone.available_in || 'N/A'}</li>
+            <li><strong>Base color:</strong> {stone.base_color || 'N/A'}</li>
+            <li><strong>Characteristics:</strong> {stone.characteristics || 'N/A'}</li>
           </ul>
         </div>
       </CardContent>
@@ -103,16 +103,18 @@ const StoneCard: React.FC<StoneCardProps> = ({
           variant="secondary"
           size="sm"
           onClick={() => onEdit(stone)}
+          className="flex items-center gap-2"
         >
-          <Edit className="mr-2 h-4 w-4" />
+          <Edit className="h-4 w-4" />
           Editar
         </Button>
         <Button 
           variant="destructive"
           size="sm"
           onClick={() => onDelete(stone.id)}
+          className="flex items-center gap-2"
         >
-          <Trash2 className="mr-2 h-4 w-4" />
+          <Trash2 className="h-4 w-4" />
           Deletar
         </Button>
       </CardFooter>

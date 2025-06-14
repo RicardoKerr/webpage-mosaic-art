@@ -22,12 +22,14 @@ const Catalog = () => {
   const { data: fetchedStones, isLoading, isError, error } = useQuery<Stone[]>({
     queryKey: ['stones'],
     queryFn: async () => {
+      console.log('Fetching stones from database...');
       const { data, error } = await supabase
         .from('aralogo_simples')
         .select('*')
         .order('id', { ascending: true });
 
       if (error) {
+        console.error('Error fetching stones:', error);
         toast({
           title: "Erro ao buscar dados",
           description: "Não foi possível carregar o catálogo do banco de dados.",
@@ -36,9 +38,14 @@ const Catalog = () => {
         throw new Error(error.message);
       }
       
-      if (!data) return [];
+      if (!data) {
+        console.log('No data returned from database');
+        return [];
+      }
 
-      return data.map(stone => ({
+      console.log('Raw data from database:', data);
+
+      const mappedStones = data.map(stone => ({
         id: stone.id.toString(),
         name: stone['Nome'] || 'Nome não disponível',
         category: stone['Categoria'] || 'Sem categoria',
@@ -50,6 +57,9 @@ const Catalog = () => {
         image_filename: stone['Imagem_Name_Site'] || '',
         image_url: '',
       }));
+
+      console.log('Mapped stones:', mappedStones);
+      return mappedStones;
     }
   });
 
@@ -67,6 +77,7 @@ const Catalog = () => {
 
   useEffect(() => {
     if (fetchedStones) {
+      console.log('Setting stones from fetchedStones:', fetchedStones);
       setStones(fetchedStones);
     }
   }, [fetchedStones]);
@@ -189,6 +200,11 @@ const Catalog = () => {
     
     return matchesCategory && matchesRockType && matchesColor && matchesSearch;
   });
+
+  console.log('Stones array:', stones);
+  console.log('Filtered stones:', filteredStones);
+  console.log('Is loading:', isLoading);
+  console.log('Is error:', isError);
 
   const handleInputChange = (key: keyof StoneFormData, value: string) => {
     setFormData(prev => ({ ...prev, [key]: value }));
@@ -342,7 +358,7 @@ const Catalog = () => {
               <div key={i} className="produto border border-gray-200 rounded-lg shadow-lg bg-white p-6 space-y-4">
                 <Skeleton className="h-8 w-3/4" />
                 <Skeleton className="h-6 w-1/2" />
-                <Skeleton className="h-64 w-full" />
+                <Skeleton className="h-48 w-full" />
                 <Skeleton className="h-24 w-full" />
               </div>
             ))}
@@ -369,30 +385,37 @@ const Catalog = () => {
 
         {!isLoading && !isError && (
           <>
-            {filteredStones.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {filteredStones.map((stone) => (
-                  <StoneCard
-                    key={stone.id}
-                    stone={stone}
-                    imageUrl={getImageUrl(stone.image_filename)}
-                    isUploading={!!uploadingImages[stone.id]}
-                    onEdit={handleEdit}
-                    onDelete={handleDelete}
-                    onImageUpload={handleImageUpload}
-                    onImageZoom={handleImageZoom}
-                  />
-                ))}
-              </div>
-            ) : stones.length > 0 ? (
-              <div className="text-center py-12">
-                <p className="text-gray-500 text-lg">
-                  Nenhuma pedra encontrada com os filtros aplicados.
-                </p>
-                <Button variant="outline" onClick={clearFilters} className="mt-4">
-                  Limpar Filtros
-                </Button>
-              </div>
+            {stones.length > 0 ? (
+              <>
+                {filteredStones.length > 0 ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    {filteredStones.map((stone) => {
+                      console.log('Rendering stone:', stone);
+                      return (
+                        <StoneCard
+                          key={stone.id}
+                          stone={stone}
+                          imageUrl={getImageUrl(stone.image_filename)}
+                          isUploading={!!uploadingImages[stone.id]}
+                          onEdit={handleEdit}
+                          onDelete={handleDelete}
+                          onImageUpload={handleImageUpload}
+                          onImageZoom={handleImageZoom}
+                        />
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div className="text-center py-12">
+                    <p className="text-gray-500 text-lg">
+                      Nenhuma pedra encontrada com os filtros aplicados.
+                    </p>
+                    <Button variant="outline" onClick={clearFilters} className="mt-4">
+                      Limpar Filtros
+                    </Button>
+                  </div>
+                )}
+              </>
             ) : (
               <div className="text-center py-12">
                 <p className="text-gray-500 text-lg">
