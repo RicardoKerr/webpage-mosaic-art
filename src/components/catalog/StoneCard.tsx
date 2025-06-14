@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -79,7 +78,9 @@ const StoneCard: React.FC<StoneCardProps> = ({
             ) : (
               <>
                 <Upload className="h-4 w-4" />
-                <span>Trocar Imagem</span>
+                <span className="truncate max-w-[200px]" title={stone.image_filename || 'Enviar nova imagem'}>
+                  {stone.image_filename || 'Enviar Imagem'}
+                </span>
               </>
             )}
           </Label>
