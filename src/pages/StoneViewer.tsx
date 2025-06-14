@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -18,12 +19,13 @@ interface Stone {
   base_color: string;
   characteristics: string;
   image_url: string;
+  image_name_site?: string;
 }
 
 const fetchStones = async (): Promise<Stone[]> => {
   const { data, error } = await supabase
     .from('aralogo_simples')
-    .select('"Nome", "Categoria", "Tipo de Rocha", "Acabamentos Disponíveis", "Disponível em", "Cor Base", "Características", "Caminho da Imagem"');
+    .select('"Nome", "Categoria", "Tipo de Rocha", "Acabamentos Disponíveis", "Disponível em", "Cor Base", "Características", "Caminho da Imagem", "Imagem_Name_Site"');
 
   if (error) {
     console.error('Error fetching stones:', error);
@@ -45,7 +47,8 @@ const fetchStones = async (): Promise<Stone[]> => {
     available_in: item['Disponível em'] || 'N/A',
     base_color: item['Cor Base'] || 'N/A',
     characteristics: item['Características'] || 'N/A',
-    image_url: item['Caminho da Imagem'] || item['Nome'] || '/placeholder.svg', // Usa o nome da pedra como fallback
+    image_url: item['Caminho da Imagem'] || item['Nome'] || '/placeholder.svg',
+    image_name_site: item['Imagem_Name_Site'] || null,
   }));
 };
 
@@ -246,8 +249,10 @@ const StoneViewer = () => {
             {/* Grid de 3 colunas */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {currentStones.map((stone) => {
-                const imageUrl = getImageUrl(stone.name); // Usa o nome da pedra para buscar a imagem
-                console.log('Stone:', stone.name, 'Image URL:', imageUrl);
+                // Usa a nova coluna Imagem_Name_Site se existir, senão usa o nome da pedra
+                const imageIdentifier = stone.image_name_site || stone.name;
+                const imageUrl = getImageUrl(imageIdentifier);
+                console.log('Stone:', stone.name, 'Image identifier:', imageIdentifier, 'Image URL:', imageUrl);
                 
                 return (
                   <div key={stone.id} className="produto border border-gray-200 rounded-lg overflow-hidden shadow-lg bg-white">
