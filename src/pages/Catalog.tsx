@@ -675,24 +675,22 @@ const Catalog = () => {
               <div className="space-y-4">
                 <div>
                   <Label>Imagem Atual</Label>
-                  {currentStone.image_url && (
-                    <div className="relative">
-                      <img 
-                        src={getImageUrl(currentStone.name)}
-                        alt={currentStone.name}
-                        className="w-full h-48 object-cover border border-gray-300 rounded-lg cursor-pointer"
-                        onClick={() => handleImageZoom(getImageUrl(currentStone.name))}
-                      />
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="absolute top-2 right-2"
-                        onClick={() => handleImageZoom(getImageUrl(currentStone.name))}
-                      >
-                        <ZoomIn className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  )}
+                  <div className="relative">
+                    <img 
+                      src={getImageUrl(currentStone.image_filename)}
+                      alt={currentStone.name}
+                      className="w-full h-48 object-cover border border-gray-300 rounded-lg cursor-pointer"
+                      onClick={() => handleImageZoom(getImageUrl(currentStone.image_filename))}
+                    />
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="absolute top-2 right-2"
+                      onClick={() => handleImageZoom(getImageUrl(currentStone.image_filename))}
+                    >
+                      <ZoomIn className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
 
                 <div>
@@ -846,7 +844,7 @@ const Catalog = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {filteredStones.map((stone) => {
-            const imageUrl = getImageUrl(stone.name);
+            const imageUrl = getImageUrl(stone.image_filename);
             console.log('Stone:', stone.name, 'Image URL:', imageUrl);
             
             return (
@@ -895,9 +893,8 @@ const Catalog = () => {
                         id={`upload-${stone.id}`}
                         disabled={uploadingImages[stone.id]}
                       />
-                      <Label htmlFor={`upload-${stone.id}`} asChild>
-                        <Button variant="outline" size="sm" disabled={uploadingImages[stone.id]}>
-                          {uploadingImages[stone.id] ? (
+                      <Label htmlFor={`upload-${stone.id}`} className="text-sm text-gray-500 cursor-pointer hover:underline flex items-center justify-center">
+                        {uploadingImages[stone.id] ? (
                             <>
                               <Upload className="mr-2 h-4 w-4 animate-spin" />
                               Enviando...
@@ -905,10 +902,9 @@ const Catalog = () => {
                           ) : (
                             <>
                               <Upload className="mr-2 h-4 w-4" />
-                              Trocar Imagem
+                              <span>{stone.image_filename || "Trocar Imagem"}</span>
                             </>
                           )}
-                        </Button>
                       </Label>
                     </div>
                   </div>
