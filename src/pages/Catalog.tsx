@@ -153,7 +153,7 @@ const Catalog = () => {
         'Cor Base': data.base_color,
         'Características': data.characteristics,
       };
-      const { error } = await supabase.from('aralogo_simples').update(dbData).eq('id', id);
+      const { error } = await supabase.from('aralogo_simples').update(dbData).eq('id', Number(id));
       if (error) throw new Error(error.message);
     },
     onSuccess: () => {
@@ -168,7 +168,7 @@ const Catalog = () => {
 
   const deleteStoneMutation = useMutation({
       mutationFn: async (stoneId: string) => {
-          const { error } = await supabase.from('aralogo_simples').delete().eq('id', stoneId);
+          const { error } = await supabase.from('aralogo_simples').delete().eq('id', Number(stoneId));
           if (error) { throw new Error(error.message); }
       },
       onSuccess: () => {
@@ -185,7 +185,7 @@ const Catalog = () => {
         const { error } = await supabase
             .from('aralogo_simples')
             .update({ 'Imagem_Name_Site': fileName })
-            .eq('id', stoneId);
+            .eq('id', Number(stoneId));
         if (error) throw new Error(error.message);
     },
     onSuccess: () => {
