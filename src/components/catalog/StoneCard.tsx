@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -87,14 +88,14 @@ const StoneCard: React.FC<StoneCardProps> = ({
         </div>
 
         <div className="bg-gray-50 p-4 rounded-lg flex-grow">
-          <h4 className="font-bold text-md mb-3 text-gray-700">Especificações Técnicas:</h4>
+          <h4 className="font-bold text-md mb-3 text-gray-700">Technical Specifications:</h4>
           <div className="space-y-2 text-sm text-gray-600">
-            <p><strong>Categoria:</strong> {stone.category || 'N/A'}</p>
-            <p><strong>Tipo de Rocha:</strong> {stone.rock_type || 'N/A'}</p>
-            <p><strong>Acabamentos:</strong> {stone.finishes || 'N/A'}</p>
-            <p><strong>Disponível em:</strong> {stone.available_in || 'N/A'}</p>
-            <p><strong>Cor Base:</strong> {stone.base_color || 'N/A'}</p>
-            <p><strong>Características:</strong> {stone.characteristics || 'N/A'}</p>
+            <p><strong>Category:</strong> {stone.category || 'N/A'}</p>
+            <p><strong>Rock type:</strong> {stone.rock_type || 'N/A'}</p>
+            <p><strong>Available finishes:</strong> {stone.finishes || 'N/A'}</p>
+            <p><strong>Available in:</strong> {stone.available_in || 'N/A'}</p>
+            <p><strong>Base color:</strong> {stone.base_color || 'N/A'}</p>
+            <p><strong>Characteristics:</strong> {stone.characteristics || 'N/A'}</p>
           </div>
         </div>
       </CardContent>
