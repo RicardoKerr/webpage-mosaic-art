@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -46,7 +45,7 @@ const fetchStones = async (): Promise<Stone[]> => {
     available_in: item['Disponível em'] || 'N/A',
     base_color: item['Cor Base'] || 'N/A',
     characteristics: item['Características'] || 'N/A',
-    image_url: item['Caminho da Imagem'] || '/placeholder.svg',
+    image_url: item['Caminho da Imagem'] || item['Nome'] || '/placeholder.svg', // Usa o nome da pedra como fallback
   }));
 };
 
@@ -246,52 +245,58 @@ const StoneViewer = () => {
           <>
             {/* Grid de 3 colunas */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {currentStones.map((stone) => (
-                <div key={stone.id} className="produto border border-gray-200 rounded-lg overflow-hidden shadow-lg bg-white">
-                  <div className="p-6">
-                    <h1 className="text-2xl font-bold text-gray-800 border-b-2 border-gray-800 pb-3 mb-4">
-                      {stone.name}
-                    </h1>
-                    
-                    <div className="font-bold text-lg mb-6">
-                      Item Name: {stone.name}
-                    </div>
-                    
-                    <div className="text-center my-8 relative">
-                      <img 
-                        src={getImageUrl(stone.image_url)} 
-                        alt={stone.name}
-                        className="w-full h-64 object-cover mx-auto border border-gray-300 rounded-lg shadow-lg cursor-pointer"
-                        onClick={() => handleImageZoom(getImageUrl(stone.image_url))}
-                        onError={(e) => {
-                          const target = e.target as HTMLImageElement;
-                          target.src = '/placeholder.svg';
-                        }}
-                      />
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="absolute top-2 right-2"
-                        onClick={() => handleImageZoom(getImageUrl(stone.image_url))}
-                      >
-                        <ZoomIn className="h-4 w-4" />
-                      </Button>
-                    </div>
-                    
-                    <div className="bg-gray-100 p-6 rounded-lg">
-                      <strong className="text-lg">Technical Specifications:</strong>
-                      <ul className="mt-4 space-y-2 pl-6">
-                        <li><strong>Category:</strong> {stone.category}</li>
-                        <li><strong>Rock type:</strong> {stone.rock_type}</li>
-                        <li><strong>Available finishes:</strong> {stone.finishes}</li>
-                        <li><strong>Available in:</strong> {stone.available_in}</li>
-                        <li><strong>Base color:</strong> {stone.base_color}</li>
-                        <li><strong>Characteristics:</strong> {stone.characteristics}</li>
-                      </ul>
+              {currentStones.map((stone) => {
+                const imageUrl = getImageUrl(stone.name); // Usa o nome da pedra para buscar a imagem
+                console.log('Stone:', stone.name, 'Image URL:', imageUrl);
+                
+                return (
+                  <div key={stone.id} className="produto border border-gray-200 rounded-lg overflow-hidden shadow-lg bg-white">
+                    <div className="p-6">
+                      <h1 className="text-2xl font-bold text-gray-800 border-b-2 border-gray-800 pb-3 mb-4">
+                        {stone.name}
+                      </h1>
+                      
+                      <div className="font-bold text-lg mb-6">
+                        Item Name: {stone.name}
+                      </div>
+                      
+                      <div className="text-center my-8 relative">
+                        <img 
+                          src={imageUrl}
+                          alt={stone.name}
+                          className="w-full h-64 object-cover mx-auto border border-gray-300 rounded-lg shadow-lg cursor-pointer"
+                          onClick={() => handleImageZoom(imageUrl)}
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            console.error('Erro ao carregar imagem:', imageUrl, 'para pedra:', stone.name);
+                            target.src = '/placeholder.svg';
+                          }}
+                        />
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="absolute top-2 right-2"
+                          onClick={() => handleImageZoom(imageUrl)}
+                        >
+                          <ZoomIn className="h-4 w-4" />
+                        </Button>
+                      </div>
+                      
+                      <div className="bg-gray-100 p-6 rounded-lg">
+                        <strong className="text-lg">Technical Specifications:</strong>
+                        <ul className="mt-4 space-y-2 pl-6">
+                          <li><strong>Category:</strong> {stone.category}</li>
+                          <li><strong>Rock type:</strong> {stone.rock_type}</li>
+                          <li><strong>Available finishes:</strong> {stone.finishes}</li>
+                          <li><strong>Available in:</strong> {stone.available_in}</li>
+                          <li><strong>Base color:</strong> {stone.base_color}</li>
+                          <li><strong>Characteristics:</strong> {stone.characteristics}</li>
+                        </ul>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
 
             {/* Paginação */}

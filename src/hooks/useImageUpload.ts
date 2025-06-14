@@ -50,17 +50,47 @@ export const useImageUpload = () => {
     }
   };
 
-  // Função para gerar URL da imagem no bucket baseada no filename
-  const getImageUrl = (filename: string): string => {
-    if (!filename) return '/placeholder.svg';
+  // Função para gerar URL da imagem no bucket baseada no filename ou nome da pedra
+  const getImageUrl = (imagePathOrName: string): string => {
+    if (!imagePathOrName) return '/placeholder.svg';
     
-    // Remove o caminho "./images/" se existir e extrai apenas o nome do arquivo
-    const cleanFilename = filename.replace('./images/', '');
+    let filename = '';
+    
+    // Se já é um caminho com ./images/, extrai o nome do arquivo
+    if (imagePathOrName.includes('./images/')) {
+      filename = imagePathOrName.replace('./images/', '');
+    } 
+    // Se é apenas um nome de arquivo (ex: image_1.jpeg)
+    else if (imagePathOrName.includes('image_')) {
+      filename = imagePathOrName;
+    }
+    // Se é um nome de pedra, tenta encontrar o arquivo correspondente
+    else {
+      // Mapeia nomes de pedras para arquivos de imagem baseado nos dados fornecidos
+      const stoneToImageMap: Record<string, string> = {
+        'Âmbar Deserto': 'image_1.jpeg',
+        'Jade Imperial': 'image_2.png', 
+        'Quartzo Rosado': 'image_3.png',
+        'Turquesa Cristalina': 'image_4.jpeg',
+        'Terra do Sertão': 'image_5.jpeg',
+        'Tempestade Carioca': 'image_6.png',
+        'Ouro de Minas Gerais': 'image_7.png',
+        'Amazônia Dourada': 'image_8.png',
+        'Mármore Imperial': 'image_9.png',
+        'Ondas de Copacabana': 'image_10.png',
+        'Luz Branca': 'image_100.jpg'
+        // Adicione mais mapeamentos conforme necessário
+      };
+      
+      filename = stoneToImageMap[imagePathOrName] || `${imagePathOrName.toLowerCase().replace(/\s+/g, '_')}.webp`;
+    }
+    
+    console.log('Buscando imagem:', filename, 'para:', imagePathOrName);
     
     // Gera a URL pública do Supabase Storage
     const { data } = supabase.storage
       .from(bucketName)
-      .getPublicUrl(cleanFilename);
+      .getPublicUrl(filename);
     
     return data?.publicUrl || '/placeholder.svg';
   };
