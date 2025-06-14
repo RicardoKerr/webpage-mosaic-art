@@ -8,7 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useForm } from 'react-hook-form';
-import { Edit, Trash2, Plus, Upload, Filter, ImageOff } from 'lucide-react';
+import { Edit, Trash2, Plus, Upload, Filter, ImageOff, X } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 // Estrutura dos dados da pedra baseada na tabela CSV completa
@@ -227,6 +227,7 @@ const Catalog = () => {
   const [filterCategory, setFilterCategory] = useState<string>('all');
   const [filterRockType, setFilterRockType] = useState<string>('all');
   const [searchTerm, setSearchTerm] = useState<string>('');
+  const [zoomedImage, setZoomedImage] = useState<string | null>(null);
   const { toast } = useToast();
 
   const form = useForm<Stone>({
@@ -617,22 +618,23 @@ const Catalog = () => {
           </Dialog>
         </div>
 
-        {/* Grid de pedras em 3 colunas - TODAS as 174 pedras */}
+        {/* Grid de pedras com imagem 200x100px */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
           {filteredStones.map((stone) => (
             <Card key={stone.id} className="overflow-hidden hover:shadow-lg transition-shadow">
-              <div className="aspect-square overflow-hidden bg-gray-100 relative">
+              <div className="w-full h-[100px] overflow-hidden bg-gray-100 relative">
                 {stone.image_url ? (
                   <img
                     src={stone.image_url}
                     alt={stone.name}
-                    className="object-cover w-full h-full hover:scale-105 transition-transform duration-300"
+                    className="w-full h-full object-cover cursor-pointer hover:scale-105 transition-transform duration-300"
+                    onClick={() => setZoomedImage(stone.image_url!)}
                   />
                 ) : (
                   <div className="w-full h-full flex flex-col items-center justify-center text-gray-400 p-4">
-                    <ImageOff className="h-12 w-12 mb-2" />
+                    <ImageOff className="h-8 w-8 mb-1" />
                     <div className="text-center">
-                      <div className="font-medium">Falta imagem</div>
+                      <div className="font-medium text-xs">Falta imagem</div>
                       <div className="text-xs mt-1">{stone.image_filename}</div>
                     </div>
                   </div>
@@ -683,6 +685,33 @@ const Catalog = () => {
             </Card>
           ))}
         </div>
+
+        {/* Dialog para zoom da imagem */}
+        <Dialog open={!!zoomedImage} onOpenChange={() => setZoomedImage(null)}>
+          <DialogContent className="max-w-4xl w-full h-[80vh] flex flex-col">
+            <DialogHeader>
+              <div className="flex justify-between items-center">
+                <DialogTitle>Visualização da Imagem</DialogTitle>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => setZoomedImage(null)}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+            </DialogHeader>
+            <div className="flex-1 flex items-center justify-center bg-black/5 rounded-lg overflow-hidden">
+              {zoomedImage && (
+                <img
+                  src={zoomedImage}
+                  alt="Zoom da pedra"
+                  className="max-w-full max-h-full object-contain"
+                />
+              )}
+            </div>
+          </DialogContent>
+        </Dialog>
 
         {filteredStones.length === 0 && (
           <div className="text-center py-12">
