@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { ArrowLeft, Edit, Trash2, Plus, Upload, Filter, X } from 'lucide-react';
+import { ArrowLeft, Edit, Trash2, Plus, Upload, Filter, X, ZoomIn, ZoomOut } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useImageUpload } from '@/hooks/useImageUpload';
 import { useToast } from '@/hooks/use-toast';
@@ -117,6 +117,7 @@ const Catalog = () => {
   const [isAddingNew, setIsAddingNew] = useState(false);
   const [uploadingImages, setUploadingImages] = useState<{[key: string]: boolean}>({});
   const [showFilters, setShowFilters] = useState(false);
+  const [zoomedImage, setZoomedImage] = useState<string | null>(null);
   const [filters, setFilters] = useState<Filters>({
     category: '',
     rock_type: '',
@@ -131,7 +132,8 @@ const Catalog = () => {
     uploadingImagesKeys: Object.keys(uploadingImages),
     isSupabaseConfigured,
     showFilters,
-    activeFilters: Object.values(filters).filter(f => f !== '').length
+    activeFilters: Object.values(filters).filter(f => f !== '').length,
+    zoomedImage
   });
 
   const existingCategories = [...new Set(stones.map(stone => stone.category))];
@@ -353,6 +355,14 @@ const Catalog = () => {
     setIsAddingNew(false);
   };
 
+  const handleImageZoom = (imageUrl: string) => {
+    setZoomedImage(imageUrl);
+  };
+
+  const closeZoom = () => {
+    setZoomedImage(null);
+  };
+
   console.log('Renderizando componente. EditingStone:', !!editingStone, 'IsAddingNew:', isAddingNew);
 
   if (editingStone || isAddingNew) {
@@ -479,11 +489,22 @@ const Catalog = () => {
                 <div>
                   <Label>Imagem Atual</Label>
                   {currentStone.image_url && (
-                    <img 
-                      src={currentStone.image_url} 
-                      alt={currentStone.name}
-                      className="w-full h-48 object-cover border border-gray-300 rounded-lg"
-                    />
+                    <div className="relative">
+                      <img 
+                        src={currentStone.image_url} 
+                        alt={currentStone.name}
+                        className="w-full h-48 object-cover border border-gray-300 rounded-lg cursor-pointer"
+                        onClick={() => handleImageZoom(currentStone.image_url)}
+                      />
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="absolute top-2 right-2"
+                        onClick={() => handleImageZoom(currentStone.image_url)}
+                      >
+                        <ZoomIn className="h-4 w-4" />
+                      </Button>
+                    </div>
                   )}
                 </div>
 
@@ -663,12 +684,52 @@ const Catalog = () => {
                   Item Name: {stone.name}
                 </div>
                 
-                <div className="text-center my-8">
+                <div className="text-center my-8 relative">
                   <img 
                     src={stone.image_url} 
                     alt={stone.name}
-                    className="w-full h-64 object-cover mx-auto border border-gray-300 rounded-lg shadow-lg"
+                    className="w-full h-64 object-cover mx-auto border border-gray-300 rounded-lg shadow-lg cursor-pointer"
+                    onClick={() => handleImageZoom(stone.image_url)}
                   />
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="absolute top-2 right-2"
+                    onClick={() => handleImageZoom(stone.image_url)}
+                  >
+                    <ZoomIn className="h-4 w-4" />
+                  </Button>
+                  
+                  <div className="mt-4">
+                    <Input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          handleImageUpload(file, stone.id);
+                        }
+                      }}
+                      className="hidden"
+                      id={`upload-${stone.id}`}
+                      disabled={uploadingImages[stone.id]}
+                    />
+                    <Label htmlFor={`upload-${stone.id}`} asChild>
+                      <Button variant="outline" size="sm" disabled={uploadingImages[stone.id]}>
+                        {uploadingImages[stone.id] ? (
+                          <>
+                            <Upload className="mr-2 h-4 w-4 animate-spin" />
+                            Enviando...
+                          </>
+                        ) : (
+                          <>
+                            <Upload className="mr-2 h-4 w-4" />
+                            Trocar Imagem
+                          </>
+                        )}
+                      </Button>
+                    </Label>
+                  </div>
                 </div>
                 
                 <div className="bg-gray-100 p-6 rounded-lg">
@@ -714,6 +775,28 @@ const Catalog = () => {
             <Button variant="outline" onClick={clearFilters} className="mt-4">
               Limpar Filtros
             </Button>
+          </div>
+        )}
+
+        {/* Modal de Zoom */}
+        {zoomedImage && (
+          <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50" onClick={closeZoom}>
+            <div className="relative max-w-4xl max-h-full p-4">
+              <Button
+                variant="outline"
+                size="sm"
+                className="absolute top-2 right-2 z-10"
+                onClick={closeZoom}
+              >
+                <ZoomOut className="h-4 w-4" />
+              </Button>
+              <img
+                src={zoomedImage}
+                alt="Zoom"
+                className="max-w-full max-h-full object-contain"
+                onClick={(e) => e.stopPropagation()}
+              />
+            </div>
           </div>
         )}
       </div>
