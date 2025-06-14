@@ -218,8 +218,8 @@ const stonesWithImages = initialStones.map(stone => {
   return stone;
 });
 
-const IMAGE_WIDTH = 260; // px (proporção aproximada da imagem enviada)
-const IMAGE_HEIGHT = Math.round(IMAGE_WIDTH / (16/9)); // 146px para 16:9
+const IMAGE_WIDTH = 260; // 16:9 approx proporção (ajustado para visualizar melhor)
+const IMAGE_HEIGHT = Math.round(IMAGE_WIDTH / (16/9)); // 146px (16:9)
 
 const Catalog = () => {
   const [stones, setStones] = useState<Stone[]>(stonesWithImages);
@@ -232,6 +232,7 @@ const Catalog = () => {
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [zoomedImage, setZoomedImage] = useState<string | null>(null);
   const [uploadLogs, setUploadLogs] = useState<string[]>([]); // log para UI
+  const [uploadDebug, setUploadDebug] = useState<string | null>(null); // log extra para debug
   const { toast } = useToast();
 
   const form = useForm<Stone>({
@@ -308,32 +309,43 @@ const Catalog = () => {
     });
   };
 
+  // --- UPLOAD ajustado para monitorar e garantir que PNG/JPEG etc funcionam corretamente ---
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
+    let debugStr = '';
     if (files) {
-      const validFiles = Array.from(files).filter(file => 
-        initialStones.some(stone => stone.image_filename === file.name)
-      );
-      const invalidFiles = Array.from(files).filter(file => 
-        !initialStones.some(stone => stone.image_filename === file.name)
-      );
+      debugStr += `Selecionado(s): ${Array.from(files).map(f => `${f.name} (${f.type})`).join(', ')}\n`;
+      // Aceita extensões: .jpeg, .jpg, .png, .webp (case-insensitive)
+      const nameMatcher = (name: string) => {
+        const lower = name.toLowerCase();
+        // Garante que nomes como image_6.png, image_6.jpeg, image_6.jpg, image_6.webp são aceitos se presentes na lista de pedras
+        return initialStones.some(stone =>
+          stone.image_filename.toLowerCase() === lower
+        );
+      };
+
+      const validFiles = Array.from(files).filter(file => nameMatcher(file.name));
+      const invalidFiles = Array.from(files).filter(file => !nameMatcher(file.name));
+
+      debugStr += `Válidos: ${validFiles.map(f=>f.name).join(', ')}\n`;
+      debugStr += `Inválidos: ${invalidFiles.map(f=>f.name).join(', ')}\n`;
 
       let logs: string[] = [];
       if (validFiles.length > 0) {
         logs.push(`${validFiles.length} imagem(ns) reconhecida(s).`);
 
-        // Simulando um upload local: cria URL e associa ao catálogo
         validFiles.forEach(file => {
           const url = URL.createObjectURL(file);
           setStones(oldStones =>
             oldStones.map(stone =>
-              stone.image_filename === file.name
+              stone.image_filename.toLowerCase() === file.name.toLowerCase()
                 ? { ...stone, image_url: url }
                 : stone
             )
           );
           logs.push(`Arquivo "${file.name}" aplicado ao card correspondente.`);
         });
+
         toast({
           title: "Upload realizado",
           description: `${validFiles.length} imagens válidas foram atualizadas.`,
@@ -351,8 +363,10 @@ const Catalog = () => {
       }
 
       setUploadLogs(logs);
-      // Limpa o input para permitir reenvio do mesmo arquivo se quiser
+      setUploadDebug(debugStr);
       event.target.value = '';
+    } else {
+      setUploadDebug("Input 'files' está undefined ou null.");
     }
   };
 
@@ -645,21 +659,27 @@ const Catalog = () => {
           </Dialog>
         </div>
 
-        {/* LOG DE UPLOAD */}
+        {/* LOG DE UPLOAD (incluindo debug extra) */}
         {uploadLogs.length > 0 && (
           <div className="my-2">
             <div className="bg-yellow-50 text-yellow-900 p-2 rounded text-xs space-y-1 border border-yellow-200">
               {uploadLogs.map((log, i) => <div key={i}>{log}</div>)}
             </div>
+            {uploadDebug && (
+              <details className="bg-gray-100 mt-1 px-2 py-1 rounded text-gray-600 text-xs select-all whitespace-pre-wrap">
+                <summary>Log de debug do upload</summary>
+                {uploadDebug}
+              </details>
+            )}
           </div>
         )}
 
-        {/* Grid de pedras com imagem 200x100px */}
+        {/* Grid de pedras com imagem 260x146px, 16:9 */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
           {filteredStones.map((stone) => (
             <Card key={stone.id} className="overflow-hidden hover:shadow-lg transition-shadow">
               <div
-                className={`w-full flex items-center justify-center bg-gray-100 relative`}
+                className="w-full flex items-center justify-center bg-gray-100 relative"
                 style={{ width: `${IMAGE_WIDTH}px`, height: `${IMAGE_HEIGHT}px`, margin: '0 auto' }}
               >
                 {stone.image_url ? (
@@ -726,7 +746,7 @@ const Catalog = () => {
           ))}
         </div>
 
-        {/* Dialog para zoom da imagem */}
+        {/* Dialog para zoom - 70vw x 70vh */}
         <Dialog open={!!zoomedImage} onOpenChange={() => setZoomedImage(null)}>
           <DialogContent className="w-[70vw] h-[70vh] max-w-none max-h-none flex flex-col">
             <DialogHeader>
