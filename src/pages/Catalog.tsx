@@ -315,12 +315,18 @@ const Catalog = () => {
     let debugStr = '';
     if (files) {
       debugStr += `Selecionado(s): ${Array.from(files).map(f => `${f.name} (${f.type})`).join(', ')}\n`;
-      // Aceita extensões: .jpeg, .jpg, .png, .webp (case-insensitive)
+
+      // Função para pegar nome base (sem extensão)
+      const getBaseName = (fileName: string) => {
+        const lastDotIndex = fileName.lastIndexOf(".");
+        return lastDotIndex === -1 ? fileName : fileName.slice(0, lastDotIndex).toLowerCase();
+      };
+
+      // Agora a checagem compara só o nome base!
       const nameMatcher = (name: string) => {
-        const lower = name.toLowerCase();
-        // Garante que nomes como image_6.png, image_6.jpeg, image_6.jpg, image_6.webp são aceitos se presentes na lista de pedras
+        const uploadBase = getBaseName(name);
         return initialStones.some(stone =>
-          stone.image_filename.toLowerCase() === lower
+          getBaseName(stone.image_filename) === uploadBase
         );
       };
 
@@ -336,26 +342,27 @@ const Catalog = () => {
 
         validFiles.forEach(file => {
           const url = URL.createObjectURL(file);
+          const uploadBase = getBaseName(file.name);
           setStones(oldStones =>
             oldStones.map(stone =>
-              stone.image_filename.toLowerCase() === file.name.toLowerCase()
+              getBaseName(stone.image_filename) === uploadBase
                 ? { ...stone, image_url: url }
                 : stone
             )
           );
-          logs.push(`Arquivo "${file.name}" aplicado ao card correspondente.`);
+          logs.push(`Arquivo "${file.name}" aplicado via nome "${uploadBase}" ao card correspondente.`);
         });
 
         toast({
           title: "Upload realizado",
-          description: `${validFiles.length} imagens válidas foram atualizadas.`,
+          description: `${validFiles.length} imagens válidas foram atualizadas (comparando apenas nome, não extensão).`,
         });
       }
       if (invalidFiles.length > 0) {
         logs.push(`${invalidFiles.length} arquivo(s) ignorado(s): ${invalidFiles.map(f=>`"${f.name}"`).join(', ')}`);
         toast({
           title: "Imagens ignoradas",
-          description: "Algumas imagens não correspondem ao padrão ou nome esperado (não aparecerão).",
+          description: "Algumas imagens não correspondem ao nome de itens do catálogo.",
         });
       }
       if (!validFiles.length && !invalidFiles.length) {
