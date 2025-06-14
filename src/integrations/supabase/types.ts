@@ -59,6 +59,7 @@ export type Database = {
           Categoria: string | null
           "Cor Base": string | null
           "Disponível em": string | null
+          id: number
           Imagem_Name_Site: string | null
           Nome: string | null
           "Tipo de Rocha": string | null
@@ -70,6 +71,7 @@ export type Database = {
           Categoria?: string | null
           "Cor Base"?: string | null
           "Disponível em"?: string | null
+          id?: number
           Imagem_Name_Site?: string | null
           Nome?: string | null
           "Tipo de Rocha"?: string | null
@@ -81,6 +83,7 @@ export type Database = {
           Categoria?: string | null
           "Cor Base"?: string | null
           "Disponível em"?: string | null
+          id?: number
           Imagem_Name_Site?: string | null
           Nome?: string | null
           "Tipo de Rocha"?: string | null

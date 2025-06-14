@@ -50,32 +50,15 @@ export const useImageUpload = () => {
     }
   };
 
-  // Função para gerar URL da imagem no bucket baseada no filename ou nome da pedra
-  const getImageUrl = (imagePathOrName: string): string => {
-    if (!imagePathOrName) return '/placeholder.svg';
-    
-    let filename = '';
-    
-    // Se já é um caminho com ./images/, extrai o nome do arquivo
-    if (imagePathOrName.includes('./images/')) {
-      filename = imagePathOrName.replace('./images/', '');
-    } 
-    // Se é apenas um nome de arquivo (ex: image_1.jpeg)
-    else if (imagePathOrName.includes('image_')) {
-      filename = imagePathOrName;
-    }
-    // Se é um nome de pedra, converte para formato de arquivo
-    else {
-      filename = `${imagePathOrName.toLowerCase().replace(/\s+/g, '_')}.webp`;
-    }
-    
-    console.log('Buscando imagem:', filename, 'para:', imagePathOrName);
-    
-    // Gera a URL pública do Supabase Storage
+  // Função para gerar URL da imagem no bucket baseada no nome do arquivo.
+  const getImageUrl = (imageFileName: string): string => {
+    if (!imageFileName) return '/placeholder.svg';
+
+    // Não muda o nome recebido. Assume que já é o nome do arquivo correto salvo na coluna Imagem_Name_Site.
     const { data } = supabase.storage
       .from(bucketName)
-      .getPublicUrl(filename);
-    
+      .getPublicUrl(imageFileName);
+
     return data?.publicUrl || '/placeholder.svg';
   };
 
