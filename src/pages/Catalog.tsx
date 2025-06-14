@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -302,9 +303,9 @@ const Catalog = () => {
 
   // Filtrar pedras baseado nos filtros aplicados
   const filteredStones = stones.filter(stone => {
-    const matchesCategory = !filters.category || stone.category === filters.category;
-    const matchesRockType = !filters.rock_type || stone.rock_type === filters.rock_type;
-    const matchesColor = !filters.base_color || stone.base_color === filters.base_color;
+    const matchesCategory = !filters.category || filters.category === 'all' || stone.category === filters.category;
+    const matchesRockType = !filters.rock_type || filters.rock_type === 'all' || stone.rock_type === filters.rock_type;
+    const matchesColor = !filters.base_color || filters.base_color === 'all' || stone.base_color === filters.base_color;
     const matchesSearch = !filters.search || 
       stone.name.toLowerCase().includes(filters.search.toLowerCase()) ||
       stone.characteristics.toLowerCase().includes(filters.search.toLowerCase());
@@ -737,7 +738,7 @@ const Catalog = () => {
                   <SelectValue placeholder="Categoria" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Todas as categorias</SelectItem>
+                  <SelectItem value="all">Todas as categorias</SelectItem>
                   {existingCategories.map(category => (
                     <SelectItem key={category} value={category}>{category}</SelectItem>
                   ))}
@@ -749,7 +750,7 @@ const Catalog = () => {
                   <SelectValue placeholder="Tipo de Rocha" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Todos os tipos</SelectItem>
+                  <SelectItem value="all">Todos os tipos</SelectItem>
                   {existingRockTypes.map(type => (
                     <SelectItem key={type} value={type}>{type}</SelectItem>
                   ))}
@@ -761,7 +762,7 @@ const Catalog = () => {
                   <SelectValue placeholder="Cor Base" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Todas as cores</SelectItem>
+                  <SelectItem value="all">Todas as cores</SelectItem>
                   {existingColors.map(color => (
                     <SelectItem key={color} value={color}>{color}</SelectItem>
                   ))}
