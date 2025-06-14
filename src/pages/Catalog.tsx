@@ -67,6 +67,10 @@ const Catalog = () => {
     zoomedImage
   });
 
+  const existingCategories = [...new Set(stones.map(stone => stone.category))];
+  const existingRockTypes = [...new Set(stones.map(stone => stone.rock_type))];
+  const existingColors = [...new Set(stones.map(stone => stone.base_color))];
+
   const [formData, setFormData] = useState<Omit<Stone, 'id' | 'image_filename' | 'image_url'>>({
     name: '',
     category: '',
@@ -111,9 +115,30 @@ const Catalog = () => {
     }
   }, [fetchedStones]);
 
+  console.log('Estados atuais:', {
+    stonesCount: stones.length,
+    editingStone: editingStone?.id,
+    isAddingNew,
+    uploadingImagesKeys: Object.keys(uploadingImages),
+    isSupabaseConfigured,
+    showFilters,
+    activeFilters: Object.values(filters).filter(f => f !== '').length,
+    zoomedImage
+  });
+
   const existingCategories = [...new Set(stones.map(stone => stone.category))];
   const existingRockTypes = [...new Set(stones.map(stone => stone.rock_type))];
   const existingColors = [...new Set(stones.map(stone => stone.base_color))];
+
+  const [formData, setFormData] = useState<Omit<Stone, 'id' | 'image_filename' | 'image_url'>>({
+    name: '',
+    category: '',
+    rock_type: '',
+    finishes: '',
+    available_in: '',
+    base_color: '',
+    characteristics: ''
+  });
 
   // Filtrar pedras baseado nos filtros aplicados
   const filteredStones = stones.filter(stone => {
