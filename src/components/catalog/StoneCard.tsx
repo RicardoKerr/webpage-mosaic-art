@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Edit, Trash2, Upload, ZoomIn } from 'lucide-react';
 import { Stone } from './types';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardFooter } from '@/components/ui/card';
 
 interface StoneCardProps {
   stone: Stone;
@@ -28,12 +28,13 @@ const StoneCard: React.FC<StoneCardProps> = ({
 }) => {
   return (
     <Card className="produto flex flex-col h-full">
-      <CardHeader>
-        <CardTitle className="border-b border-gray-200 pb-3">
+      <CardContent className="p-6 flex-grow flex flex-col space-y-4">
+        <h3 className="text-2xl font-semibold leading-none tracking-tight border-b border-gray-200 pb-3">
           {stone.name}
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="flex-grow space-y-4">
+        </h3>
+        
+        <p className="text-sm text-muted-foreground"><strong>Item Name:</strong> {stone.name}</p>
+
         <div className="text-center relative">
           <img
             src={imageUrl}
@@ -77,27 +78,27 @@ const StoneCard: React.FC<StoneCardProps> = ({
                 ) : (
                   <>
                     <Upload className="mr-2 h-4 w-4" />
-                    <span>{stone.image_filename ? "Trocar Imagem" : "Adicionar Imagem"}</span>
+                    <span>{stone.image_filename ? stone.image_filename : "Adicionar Imagem"}</span>
                   </>
                 )}
             </Label>
           </div>
         </div>
         
-        <div className="bg-gray-50 p-4 rounded-lg">
-          <strong className="text-md font-semibold">Especificações Técnicas:</strong>
-          <ul className="mt-3 space-y-1 text-sm text-gray-700 list-disc pl-5">
-            <li><strong>Categoria:</strong> {stone.category}</li>
-            <li><strong>Tipo de Rocha:</strong> {stone.rock_type}</li>
-            <li><strong>Acabamentos:</strong> {stone.finishes}</li>
-            <li><strong>Disponível em:</strong> {stone.available_in}</li>
-            <li><strong>Cor Base:</strong> {stone.base_color}</li>
-            <li><strong>Características:</strong> {stone.characteristics}</li>
+        <div className="bg-gray-50 p-4 rounded-lg mt-auto">
+          <strong className="text-md font-semibold">Technical Specifications:</strong>
+          <ul className="mt-3 space-y-1 text-sm text-gray-700">
+            <li><strong>Category:</strong> {stone.category}</li>
+            <li><strong>Rock type:</strong> {stone.rock_type}</li>
+            <li><strong>Available finishes:</strong> {stone.finishes}</li>
+            <li><strong>Available in:</strong> {stone.available_in}</li>
+            <li><strong>Base color:</strong> {stone.base_color}</li>
+            <li><strong>Characteristics:</strong> {stone.characteristics}</li>
           </ul>
         </div>
       </CardContent>
 
-      <CardFooter className="flex justify-between">
+      <CardFooter className="flex justify-between p-6 pt-0">
         <Button 
           variant="secondary"
           size="sm"
