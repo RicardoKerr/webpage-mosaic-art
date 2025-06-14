@@ -4,7 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { ArrowLeft, Edit, Trash2, Plus, Upload, Filter, X, ZoomIn, ZoomOut } from 'lucide-react';
+import { ArrowLeft, Edit, Trash2, Plus, Upload, Filter, X, ZoomIn, ZoomOut, Search } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useImageUpload } from '@/hooks/useImageUpload';
 import { useToast } from '@/hooks/use-toast';
@@ -260,7 +260,7 @@ const Catalog = () => {
   console.log('=== RENDERIZANDO CATALOG ===');
   
   const navigate = useNavigate();
-  const { uploadImage, isSupabaseConfigured } = useImageUpload();
+  const { uploadImage, getImageUrl, isSupabaseConfigured } = useImageUpload();
   const { toast } = useToast();
   const [stones, setStones] = useState<Stone[]>(allStones);
   const [editingStone, setEditingStone] = useState<Stone | null>(null);
@@ -641,16 +641,16 @@ const Catalog = () => {
                   {currentStone.image_url && (
                     <div className="relative">
                       <img 
-                        src={currentStone.image_url} 
+                        src={getImageUrl(currentStone.name)}
                         alt={currentStone.name}
                         className="w-full h-48 object-cover border border-gray-300 rounded-lg cursor-pointer"
-                        onClick={() => handleImageZoom(currentStone.image_url)}
+                        onClick={() => handleImageZoom(getImageUrl(currentStone.name))}
                       />
                       <Button
                         variant="outline"
                         size="sm"
                         className="absolute top-2 right-2"
-                        onClick={() => handleImageZoom(currentStone.image_url)}
+                        onClick={() => handleImageZoom(getImageUrl(currentStone.name))}
                       >
                         <ZoomIn className="h-4 w-4" />
                       </Button>
@@ -714,6 +714,72 @@ const Catalog = () => {
             Catálogo de Pedras Naturais
           </h1>
           
+          {/* Seção de Filtros */}
+          <div className="bg-gray-50 p-6 rounded-lg mb-6">
+            <div className="flex items-center gap-2 mb-4">
+              <Filter className="h-5 w-5 text-gray-600" />
+              <h2 className="text-lg font-semibold text-gray-700">Filtros de Busca</h2>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+              <div className="relative">
+                <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                <Input
+                  placeholder="Buscar por nome..."
+                  value={filters.search}
+                  onChange={(e) => handleFilterChange('search', e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+              
+              <Select value={filters.category} onValueChange={(value) => handleFilterChange('category', value)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Categoria" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">Todas as categorias</SelectItem>
+                  {existingCategories.map(category => (
+                    <SelectItem key={category} value={category}>{category}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              <Select value={filters.rock_type} onValueChange={(value) => handleFilterChange('rock_type', value)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Tipo de Rocha" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">Todos os tipos</SelectItem>
+                  {existingRockTypes.map(type => (
+                    <SelectItem key={type} value={type}>{type}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              <Select value={filters.base_color} onValueChange={(value) => handleFilterChange('base_color', value)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Cor Base" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">Todas as cores</SelectItem>
+                  {existingColors.map(color => (
+                    <SelectItem key={color} value={color}>{color}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="flex items-center justify-between">
+              <p className="text-sm text-gray-600">
+                Mostrando {filteredStones.length} de {stones.length} pedras
+              </p>
+              <Button variant="outline" size="sm" onClick={clearFilters}>
+                <X className="mr-2 h-4 w-4" />
+                Limpar Filtros
+              </Button>
+            </div>
+          </div>
+          
           <div className="flex flex-wrap gap-4 mb-6">
             <Button onClick={handleAdd}>
               <Plus className="mr-2 h-4 w-4" />
@@ -738,181 +804,112 @@ const Catalog = () => {
                 Upload em Lote
               </Button>
             </div>
-            
-            <Button 
-              variant="outline" 
-              onClick={() => setShowFilters(!showFilters)}
-            >
-              <Filter className="mr-2 h-4 w-4" />
-              Filtros {Object.values(filters).filter(f => f !== '').length > 0 && `(${Object.values(filters).filter(f => f !== '').length})`}
-            </Button>
           </div>
-
-          {showFilters && (
-            <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-6">
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div>
-                  <Label htmlFor="search-filter">Buscar</Label>
-                  <Input
-                    id="search-filter"
-                    placeholder="Nome ou características..."
-                    value={filters.search}
-                    onChange={(e) => handleFilterChange('search', e.target.value)}
-                  />
-                </div>
-                
-                <div>
-                  <Label htmlFor="category-filter">Categoria</Label>
-                  <Select value={filters.category} onValueChange={(value) => handleFilterChange('category', value)}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Todas" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="">Todas</SelectItem>
-                      {existingCategories.map(category => (
-                        <SelectItem key={category} value={category}>{category}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                
-                <div>
-                  <Label htmlFor="rock-type-filter">Tipo de Rocha</Label>
-                  <Select value={filters.rock_type} onValueChange={(value) => handleFilterChange('rock_type', value)}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Todos" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="">Todos</SelectItem>
-                      {existingRockTypes.map(rockType => (
-                        <SelectItem key={rockType} value={rockType}>{rockType}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                
-                <div>
-                  <Label htmlFor="color-filter">Cor Base</Label>
-                  <Select value={filters.base_color} onValueChange={(value) => handleFilterChange('base_color', value)}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Todas" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="">Todas</SelectItem>
-                      {existingColors.map(color => (
-                        <SelectItem key={color} value={color}>{color}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-              
-              <div className="flex justify-between items-center mt-4">
-                <p className="text-sm text-gray-600">
-                  Mostrando {filteredStones.length} de {stones.length} pedras
-                </p>
-                <Button variant="outline" size="sm" onClick={clearFilters}>
-                  <X className="mr-2 h-4 w-4" />
-                  Limpar Filtros
-                </Button>
-              </div>
-            </div>
-          )}
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {filteredStones.map((stone) => (
-            <div key={stone.id} className="produto border border-gray-200 rounded-lg overflow-hidden shadow-lg bg-white">
-              <div className="p-6">
-                <h1 className="text-2xl font-bold text-gray-800 border-b-2 border-gray-800 pb-3 mb-4">
-                  {stone.name}
-                </h1>
-                
-                <div className="font-bold text-lg mb-6">
-                  Item Name: {stone.name}
-                </div>
-                
-                <div className="text-center my-8 relative">
-                  <img 
-                    src={stone.image_url} 
-                    alt={stone.name}
-                    className="w-full h-64 object-cover mx-auto border border-gray-300 rounded-lg shadow-lg cursor-pointer"
-                    onClick={() => handleImageZoom(stone.image_url)}
-                  />
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="absolute top-2 right-2"
-                    onClick={() => handleImageZoom(stone.image_url)}
-                  >
-                    <ZoomIn className="h-4 w-4" />
-                  </Button>
+          {filteredStones.map((stone) => {
+            const imageUrl = getImageUrl(stone.name);
+            console.log('Stone:', stone.name, 'Image URL:', imageUrl);
+            
+            return (
+              <div key={stone.id} className="produto border border-gray-200 rounded-lg overflow-hidden shadow-lg bg-white">
+                <div className="p-6">
+                  <h1 className="text-2xl font-bold text-gray-800 border-b-2 border-gray-800 pb-3 mb-4">
+                    {stone.name}
+                  </h1>
                   
-                  <div className="mt-4">
-                    <Input
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (file) {
-                          handleImageUpload(file, stone.id);
-                        }
+                  <div className="font-bold text-lg mb-6">
+                    Item Name: {stone.name}
+                  </div>
+                  
+                  <div className="text-center my-8 relative">
+                    <img 
+                      src={imageUrl}
+                      alt={stone.name}
+                      className="w-full h-64 object-cover mx-auto border border-gray-300 rounded-lg shadow-lg cursor-pointer"
+                      onClick={() => handleImageZoom(imageUrl)}
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        console.error('Erro ao carregar imagem:', imageUrl, 'para pedra:', stone.name);
+                        target.src = '/placeholder.svg';
                       }}
-                      className="hidden"
-                      id={`upload-${stone.id}`}
-                      disabled={uploadingImages[stone.id]}
                     />
-                    <Label htmlFor={`upload-${stone.id}`} asChild>
-                      <Button variant="outline" size="sm" disabled={uploadingImages[stone.id]}>
-                        {uploadingImages[stone.id] ? (
-                          <>
-                            <Upload className="mr-2 h-4 w-4 animate-spin" />
-                            Enviando...
-                          </>
-                        ) : (
-                          <>
-                            <Upload className="mr-2 h-4 w-4" />
-                            Trocar Imagem
-                          </>
-                        )}
-                      </Button>
-                    </Label>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="absolute top-2 right-2"
+                      onClick={() => handleImageZoom(imageUrl)}
+                    >
+                      <ZoomIn className="h-4 w-4" />
+                    </Button>
+                    
+                    <div className="mt-4">
+                      <Input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            handleImageUpload(file, stone.id);
+                          }
+                        }}
+                        className="hidden"
+                        id={`upload-${stone.id}`}
+                        disabled={uploadingImages[stone.id]}
+                      />
+                      <Label htmlFor={`upload-${stone.id}`} asChild>
+                        <Button variant="outline" size="sm" disabled={uploadingImages[stone.id]}>
+                          {uploadingImages[stone.id] ? (
+                            <>
+                              <Upload className="mr-2 h-4 w-4 animate-spin" />
+                              Enviando...
+                            </>
+                          ) : (
+                            <>
+                              <Upload className="mr-2 h-4 w-4" />
+                              Trocar Imagem
+                            </>
+                          )}
+                        </Button>
+                      </Label>
+                    </div>
+                  </div>
+                  
+                  <div className="bg-gray-100 p-6 rounded-lg">
+                    <strong className="text-lg">Technical Specifications:</strong>
+                    <ul className="mt-4 space-y-2 pl-6">
+                      <li><strong>Category:</strong> {stone.category}</li>
+                      <li><strong>Rock type:</strong> {stone.rock_type}</li>
+                      <li><strong>Available finishes:</strong> {stone.finishes}</li>
+                      <li><strong>Available in:</strong> {stone.available_in}</li>
+                      <li><strong>Base color:</strong> {stone.base_color}</li>
+                      <li><strong>Characteristics:</strong> {stone.characteristics}</li>
+                    </ul>
+                  </div>
+
+                  <div className="flex justify-between mt-4">
+                    <Button 
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => handleEdit(stone)}
+                    >
+                      <Edit className="mr-2 h-4 w-4" />
+                      Editar
+                    </Button>
+                    <Button 
+                      variant="destructive"
+                      size="sm"
+                      onClick={() => handleDelete(stone.id)}
+                    >
+                      <Trash2 className="mr-2 h-4 w-4" />
+                      Deletar
+                    </Button>
                   </div>
                 </div>
-                
-                <div className="bg-gray-100 p-6 rounded-lg">
-                  <strong className="text-lg">Technical Specifications:</strong>
-                  <ul className="mt-4 space-y-2 pl-6">
-                    <li><strong>Category:</strong> {stone.category}</li>
-                    <li><strong>Rock type:</strong> {stone.rock_type}</li>
-                    <li><strong>Available finishes:</strong> {stone.finishes}</li>
-                    <li><strong>Available in:</strong> {stone.available_in}</li>
-                    <li><strong>Base color:</strong> {stone.base_color}</li>
-                    <li><strong>Characteristics:</strong> {stone.characteristics}</li>
-                  </ul>
-                </div>
-
-                <div className="flex justify-between mt-4">
-                  <Button 
-                    variant="secondary"
-                    size="sm"
-                    onClick={() => handleEdit(stone)}
-                  >
-                    <Edit className="mr-2 h-4 w-4" />
-                    Editar
-                  </Button>
-                  <Button 
-                    variant="destructive"
-                    size="sm"
-                    onClick={() => handleDelete(stone.id)}
-                  >
-                    <Trash2 className="mr-2 h-4 w-4" />
-                    Deletar
-                  </Button>
-                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
         {filteredStones.length === 0 && (
