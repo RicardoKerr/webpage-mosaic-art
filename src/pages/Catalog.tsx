@@ -251,6 +251,7 @@ const Catalog = () => {
   // Filtros únicos para os selects
   const categories = [...new Set(stones.map(stone => stone.category))];
   const rockTypes = [...new Set(stones.map(stone => stone.rock_type))];
+  const baseColors = [...new Set(stones.map(stone => stone.base_color))].filter(Boolean).sort();
 
   // Pedras filtradas
   const filteredStones = stones.filter(stone => {
@@ -267,7 +268,7 @@ const Catalog = () => {
     if (selectedStone) {
       // Editar pedra existente
       setStones(stones.map(stone => 
-        stone.id === selectedStone.id ? { ...data, id: selectedStone.id } : stone
+        stone.id === selectedStone.id ? { ...data, id: selectedStone.id, image_url: selectedStone.image_url } : stone
       ));
       toast({
         title: "Pedra atualizada",
@@ -307,6 +308,26 @@ const Catalog = () => {
       title: "Pedra removida",
       description: `${stoneName} foi removida do catálogo.`,
     });
+  };
+
+  // Upload individual de imagem para pedra específica
+  const handleIndividualImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file && selectedStone) {
+      const url = URL.createObjectURL(file);
+      setSelectedStone({ ...selectedStone, image_url: url });
+      
+      // Atualizar também no estado das pedras
+      setStones(stones.map(stone => 
+        stone.id === selectedStone.id ? { ...stone, image_url: url } : stone
+      ));
+      
+      toast({
+        title: "Imagem atualizada",
+        description: `Imagem da pedra ${selectedStone.name} foi atualizada.`,
+      });
+    }
+    event.target.value = '';
   };
 
   // --- UPLOAD ajustado para monitorar e garantir que PNG/JPEG etc funcionam corretamente ---
@@ -582,7 +603,16 @@ const Catalog = () => {
                         <FormItem>
                           <FormLabel>Cor Base</FormLabel>
                           <FormControl>
-                            <Input placeholder="Ex: Beige/Brown" {...field} />
+                            <Select onValueChange={field.onChange} value={field.value}>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Selecione ou digite uma cor" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {baseColors.map(color => (
+                                  <SelectItem key={color} value={color}>{color}</SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -618,6 +648,26 @@ const Catalog = () => {
                       </FormItem>
                     )}
                   />
+                  
+                  {/* Upload individual de imagem */}
+                  {selectedStone && (
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Substituir Imagem</label>
+                      <div className="flex items-center gap-3">
+                        <Input
+                          type="file"
+                          accept="image/*"
+                          onChange={handleIndividualImageUpload}
+                          className="cursor-pointer"
+                        />
+                        <Upload className="h-4 w-4 text-gray-400" />
+                      </div>
+                      <p className="text-xs text-gray-500">
+                        Upload de nova imagem para substituir a existente
+                      </p>
+                    </div>
+                  )}
+                  
                   <div className="flex justify-end gap-2">
                     <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
                       Cancelar
