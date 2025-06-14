@@ -258,6 +258,13 @@ const stoneNames = [
 for (let i = 11; i <= 173; i++) {
   if (!allStones.find(stone => stone.id === i.toString())) {
     const nameIndex = (i - 11) % stoneNames.length;
+    
+    let image_filename = `image_${i}.jpeg`;
+    // Specific fix for "Mármore Clássico" (ID 12), trying a different extension
+    if (i === 12) {
+      image_filename = 'image_12.png';
+    }
+
     allStones.push({
       id: i.toString(),
       name: stoneNames[nameIndex],
@@ -267,7 +274,7 @@ for (let i = 11; i <= 173; i++) {
       available_in: 'Slab',
       base_color: 'Variado',
       characteristics: 'Marble with distinctive characteristics',
-      image_filename: `image_${i}.jpeg`,
+      image_filename: image_filename,
       image_url: '/placeholder.svg'
     });
   }
