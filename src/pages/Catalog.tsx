@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -8,277 +8,9 @@ import { ArrowLeft, Edit, Trash2, Plus, Upload, Filter, X, ZoomIn, ZoomOut, Sear
 import { useNavigate } from 'react-router-dom';
 import { useImageUpload } from '@/hooks/useImageUpload';
 import { useToast } from '@/hooks/use-toast';
-
-// Complete list of 174 stones from the CSV data
-const allStones = [
-  {
-    id: '1',
-    name: 'Âmbar Deserto',
-    category: 'Noble Stones',
-    rock_type: 'Marble',
-    finishes: 'Polished, Honed',
-    available_in: 'Slab',
-    base_color: 'Beige/Brown',
-    characteristics: 'Beige/brown marble with distinctive veins.',
-    image_filename: 'image_1.jpeg',
-    image_url: '/lovable-uploads/14b3e1d0-8f04-4112-a939-ede0d6ad3f58.png'
-  },
-  {
-    id: '2',
-    name: 'Jade Imperial',
-    category: 'Noble Stones',
-    rock_type: 'Marble',
-    finishes: 'Polished, Honed',
-    available_in: 'Slab',
-    base_color: 'Green With Veins',
-    characteristics: 'Green with veins marble with distinctive veins.',
-    image_filename: 'image_2.png',
-    image_url: '/lovable-uploads/ab956562-5b10-4384-9d89-cf0616450602.png'
-  },
-  {
-    id: '3',
-    name: 'Quartzo Rosado',
-    category: 'Noble Stones',
-    rock_type: 'Marble',
-    finishes: 'Polished, Honed',
-    available_in: 'Slab',
-    base_color: 'Pink/Reddish',
-    characteristics: 'Pink marble with spots like rose quartz crystals',
-    image_filename: 'image_3.png',
-    image_url: '/lovable-uploads/8c6ffb9e-aae1-4b77-bccf-0d00024f5aff.png'
-  },
-  {
-    id: '4',
-    name: 'Turquesa Cristalina',
-    category: 'Noble Stones',
-    rock_type: 'Marble',
-    finishes: 'Polished, Honed',
-    available_in: 'Slab',
-    base_color: 'Blue-Green',
-    characteristics: 'Blue-green marble reminiscent of crystalline turquoise stones',
-    image_filename: 'image_4.jpeg',
-    image_url: '/lovable-uploads/4b24d0c6-d562-46ec-8bc4-7ebfa01a9a49.png'
-  },
-  {
-    id: '5',
-    name: 'Terra do Sertão',
-    category: 'Noble Stones',
-    rock_type: 'Marble',
-    finishes: 'Polished, Honed',
-    available_in: 'Slab',
-    base_color: 'Orange/Reddish',
-    characteristics: 'Orange-reddish marble reminiscent of the arid lands of the brazilian backlands',
-    image_filename: 'image_5.jpeg',
-    image_url: '/lovable-uploads/429c46cc-a9cd-42a9-b24e-fe26a64b765a.png'
-  },
-  {
-    id: '6',
-    name: 'Tempestade Carioca',
-    category: 'Noble Stones',
-    rock_type: 'Marble',
-    finishes: 'Polished, Honed',
-    available_in: 'Slab',
-    base_color: 'Blue With Veins',
-    characteristics: 'Blue with veins marble with distinctive veins.',
-    image_filename: 'image_6.png',
-    image_url: '/lovable-uploads/8c6ffb9e-aae1-4b77-bccf-0d00024f5aff.png'
-  },
-  {
-    id: '7',
-    name: 'Ouro de Minas Gerais',
-    category: 'Noble Stones',
-    rock_type: 'Marble',
-    finishes: 'Polished, Honed',
-    available_in: 'Slab',
-    base_color: 'Beige With Golden Veins',
-    characteristics: 'Beige with golden veins marble with golden veins, reminiscent of brazilian luxury.',
-    image_filename: 'image_7.png',
-    image_url: '/placeholder.svg'
-  },
-  {
-    id: '8',
-    name: 'Amazônia Dourada',
-    category: 'Noble Stones',
-    rock_type: 'Marble',
-    finishes: 'Polished, Honed',
-    available_in: 'Slab',
-    base_color: 'Green With Golden Veins',
-    characteristics: 'Green with golden veins marble with golden veins, reminiscent of brazilian luxury.',
-    image_filename: 'image_8.png',
-    image_url: '/placeholder.svg'
-  },
-  {
-    id: '9',
-    name: 'Mármore Imperial',
-    category: 'Noble Stones',
-    rock_type: 'Marble',
-    finishes: 'Polished, Honed',
-    available_in: 'Slab',
-    base_color: 'White With Golden Veins',
-    characteristics: 'White with golden veins marble with golden veins, reminiscent of brazilian luxury.',
-    image_filename: 'image_9.png',
-    image_url: '/placeholder.svg'
-  },
-  {
-    id: '10',
-    name: 'Ondas de Copacabana',
-    category: 'Noble Stones',
-    rock_type: 'Marble',
-    finishes: 'Polished, Honed',
-    available_in: 'Slab',
-    base_color: 'Grayish Blue',
-    characteristics: 'Striped blue marble reminiscent of the waves of copacabana beach',
-    image_filename: 'image_10.png',
-    image_url: '/placeholder.svg'
-  },
-  // Adding all remaining stones...
-  {
-    id: '30',
-    name: 'Neblina da Serra Gaúcha',
-    category: 'New Releases',
-    rock_type: 'Granite',
-    finishes: 'Matte, Raw',
-    available_in: 'Slab',
-    base_color: 'White',
-    characteristics: 'Grayish white granite reminiscent of the mist that covers serra gaúcha.',
-    image_filename: 'image_30.jpeg',
-    image_url: '/placeholder.svg'
-  },
-  {
-    id: '31',
-    name: 'Nuvens de Algodão',
-    category: 'New Releases',
-    rock_type: 'Granite',
-    finishes: 'Matte',
-    available_in: 'Slab',
-    base_color: 'White',
-    characteristics: 'White marble with distinctive veins.',
-    image_filename: 'image_31.jpeg',
-    image_url: '/placeholder.svg'
-  },
-  {
-    id: '32',
-    name: 'Rios Brasileiros',
-    category: 'Exotics',
-    rock_type: 'Comportamento de Granite',
-    finishes: 'Polished, Honed, Brushed, Velvet',
-    available_in: 'Slab',
-    base_color: 'Blue',
-    characteristics: 'Blue marble with golden veins, reminiscent of brazilian luxury.',
-    image_filename: 'image_32.jpeg',
-    image_url: '/placeholder.svg'
-  },
-  {
-    id: '50',
-    name: 'Montanhas Cobertas',
-    category: 'Granites',
-    rock_type: 'Granite',
-    finishes: 'Polished, Honed',
-    available_in: 'Slab',
-    base_color: 'Black With Golden Spots',
-    characteristics: 'Black granite with golden spots',
-    image_filename: 'image_50.webp',
-    image_url: '/placeholder.svg'
-  },
-  {
-    id: '100',
-    name: 'Luz Branca',
-    category: 'Quartzites',
-    rock_type: 'Quartzite',
-    finishes: 'Polished',
-    available_in: 'Slab',
-    base_color: 'White',
-    characteristics: 'Quartzite white luminoso que lembra a luz intensa do sol brasileiro refletida nas rochas criando um ambiente iluminado and energizante',
-    image_filename: 'image_100.jpg',
-    image_url: '/placeholder.svg'
-  },
-  {
-    id: '150',
-    name: 'Carajás Green',
-    category: 'Quartzites',
-    rock_type: 'Quartzite',
-    finishes: 'Polished',
-    available_in: 'Slab',
-    base_color: 'Green',
-    characteristics: 'Green with movimentos de marrom ao lilac marble with distinctive veins.',
-    image_filename: 'image_150.jpeg',
-    image_url: '/placeholder.svg'
-  },
-  {
-    id: '174',
-    name: 'Ouro de Jatoba',
-    category: 'Ultracompact Surfaces',
-    rock_type: 'Magquartz Quartz',
-    finishes: 'Polished',
-    available_in: 'Countertops, Wall Cladding, Flooring',
-    base_color: 'White With Golden Veins',
-    characteristics: 'Ultra-compact quartz surface, high resistance, elegance and durability.',
-    image_filename: 'image_192.webp',
-    image_url: '/placeholder.svg'
-  }
-];
-
-// Generate proper stone names for remaining IDs
-const stoneNames = [
-  'Ágata Brasileira', 'Mármore Clássico', 'Granito Imperial', 'Pedra do Rio', 'Cristal Amazônico',
-  'Rocha Dourada', 'Mármore Real', 'Pedra Lunar', 'Granito Tropical', 'Mármore dos Andes',
-  'Quartzo Natural', 'Pedra Selvagem', 'Mármore Oceânico', 'Granito do Norte', 'Pedra Vulcânica',
-  'Mármore Régio', 'Granito Solar', 'Pedra Mística', 'Mármore Celeste', 'Quartzo Puro',
-  'Pedra Amazônica', 'Mármore Nobre', 'Granito Moderno', 'Pedra Elegante', 'Mármore Luxo',
-  'Granito Premium', 'Pedra Exclusiva', 'Mármore Único', 'Granito Especial', 'Pedra Rara',
-  'Mármore Supremo', 'Granito Elite', 'Pedra Divina', 'Mármore Majestoso', 'Granito Nobre',
-  'Pedra Celestial', 'Mármore Exótico', 'Granito Refinado', 'Pedra Magnífica', 'Mármore Glorioso',
-  'Granito Extraordinário', 'Pedra Sublime', 'Mármore Radiante', 'Granito Luminoso', 'Pedra Brilhante',
-  'Mármore Esplêndido', 'Granito Majestoso', 'Pedra Real', 'Mármore Divino', 'Granito Celestial',
-  'Pedra Nobre', 'Mármore Eterno', 'Granito Infinito', 'Pedra Eterna', 'Mármore Infinito',
-  'Granito Eterno', 'Pedra Infinita', 'Mármore Perpétuo', 'Granito Perpétuo', 'Pedra Perpétua',
-  'Mármore Duradouro', 'Granito Duradouro', 'Pedra Duradoura', 'Mármore Resistente', 'Granito Resistente',
-  'Pedra Resistente', 'Mármore Forte', 'Granito Forte', 'Pedra Forte', 'Mármore Sólido',
-  'Granito Sólido', 'Pedra Sólida', 'Mármore Firme', 'Granito Firme', 'Pedra Firme',
-  'Mármore Estável', 'Granito Estável', 'Pedra Estável', 'Mármore Confiável', 'Granito Confiável',
-  'Pedra Confiável', 'Mármore Seguro', 'Granito Seguro', 'Pedra Segura', 'Mármore Garantido',
-  'Granito Garantido', 'Pedra Garantida', 'Mármore Certificado', 'Granito Certificado', 'Pedra Certificada',
-  'Mármore Aprovado', 'Granito Aprovado', 'Pedra Aprovada', 'Mármore Testado', 'Granito Testado',
-  'Pedra Testada', 'Mármore Validado', 'Granito Validado', 'Pedra Validada', 'Mármore Confirmado',
-  'Granito Confirmado', 'Pedra Confirmada', 'Mármore Verificado', 'Granito Verificado', 'Pedra Verificada',
-  'Mármore Autenticado', 'Granito Autenticado', 'Pedra Autenticada', 'Mármore Original', 'Granito Original',
-  'Pedra Original', 'Mármore Genuíno', 'Granito Genuíno', 'Pedra Genuína', 'Mármore Verdadeiro',
-  'Granito Verdadeiro', 'Pedra Verdadeira', 'Mármore Natural', 'Granito Natural', 'Pedra Natural',
-  'Mármore Puro', 'Granito Puro', 'Pedra Pura', 'Mármore Limpo', 'Granito Limpo',
-  'Pedra Limpa', 'Mármore Claro', 'Granito Claro', 'Pedra Clara', 'Mármore Transparente',
-  'Granito Transparente', 'Pedra Transparente', 'Mármore Cristalino', 'Granito Cristalino', 'Pedra Cristalina',
-  'Mármore Brilhoso', 'Granito Brilhoso', 'Pedra Brilhosa', 'Mármore Polido', 'Granito Polido',
-  'Pedra Polida', 'Mármore Lustrado', 'Granito Lustrado', 'Pedra Lustrada', 'Mármore Refinado',
-  'Granito Refinado', 'Pedra Refinada', 'Mármore Lapidado', 'Granito Lapidado', 'Pedra Lapidada',
-  'Mármore Trabalhado', 'Granito Trabalhado', 'Pedra Trabalhada', 'Mármore Esculpido', 'Granito Esculpido',
-  'Pedra Esculpida', 'Mármore Modelado', 'Granito Modelado', 'Pedra Modelada', 'Mármore Formado'
-];
-
-// Add all remaining stones to reach 174 total
-for (let i = 11; i <= 173; i++) {
-  if (!allStones.find(stone => stone.id === i.toString())) {
-    const nameIndex = (i - 11) % stoneNames.length;
-    
-    let image_filename = `image_${i}.jpeg`;
-    // Specific fix for stones with different image extensions
-    if (i === 12 || i === 13 || i === 16) {
-      image_filename = `image_${i}.png`;
-    }
-
-    allStones.push({
-      id: i.toString(),
-      name: stoneNames[nameIndex],
-      category: 'Noble Stones',
-      rock_type: 'Marble',
-      finishes: 'Polished, Honed',
-      available_in: 'Slab',
-      base_color: 'Variado',
-      characteristics: 'Marble with distinctive characteristics',
-      image_filename: image_filename,
-      image_url: '/placeholder.svg'
-    });
-  }
-}
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface Stone {
   id: string;
@@ -306,7 +38,46 @@ const Catalog = () => {
   const navigate = useNavigate();
   const { uploadImage, getImageUrl, isSupabaseConfigured } = useImageUpload();
   const { toast } = useToast();
-  const [stones, setStones] = useState<Stone[]>(allStones);
+
+  const { data: fetchedStones, isLoading, isError } = useQuery<Stone[]>({
+    queryKey: ['stones'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('aralogo_simples')
+        .select('*')
+        .order('id', { ascending: true });
+
+      if (error) {
+        toast({
+          title: "Erro ao buscar dados",
+          description: "Não foi possível carregar o catálogo do banco de dados.",
+          variant: "destructive",
+        });
+        throw new Error(error.message);
+      }
+
+      return data.map(stone => ({
+        id: stone.id.toString(),
+        name: stone['Nome'] || 'Nome não disponível',
+        category: stone['Categoria'] || 'Sem categoria',
+        rock_type: stone['Tipo de Rocha'] || 'Não especificado',
+        finishes: stone['Acabamentos Disponíveis'] || 'Não especificado',
+        available_in: stone['Disponível em'] || 'Não especificado',
+        base_color: stone['Cor Base'] || 'Não especificado',
+        characteristics: stone['Características'] || 'Sem descrição',
+        image_filename: stone['Imagem_Name_Site'] || '',
+        image_url: '', // Gerado dinamicamente
+      }));
+    }
+  });
+
+  const [stones, setStones] = useState<Stone[]>([]);
+  useEffect(() => {
+    if (fetchedStones) {
+      setStones(fetchedStones);
+    }
+  }, [fetchedStones]);
+
   const [editingStone, setEditingStone] = useState<Stone | null>(null);
   const [isAddingNew, setIsAddingNew] = useState(false);
   const [uploadingImages, setUploadingImages] = useState<{[key: string]: boolean}>({});
@@ -849,110 +620,136 @@ const Catalog = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {filteredStones.map((stone) => {
-            const imageUrl = getImageUrl(stone.image_filename);
-            console.log('Stone:', stone.name, 'Image URL:', imageUrl);
-            
-            return (
-              <div key={stone.id} className="produto border border-gray-200 rounded-lg overflow-hidden shadow-lg bg-white">
-                <div className="p-6">
-                  <h1 className="text-2xl font-bold text-gray-800 border-b-2 border-gray-800 pb-3 mb-4">
-                    {stone.name}
-                  </h1>
-                  
-                  <div className="font-bold text-lg mb-6">
-                    Item Name: {stone.name}
-                  </div>
-                  
-                  <div className="text-center my-8 relative">
-                    <img 
-                      src={imageUrl}
-                      alt={stone.name}
-                      className="w-full h-64 object-cover mx-auto border border-gray-300 rounded-lg shadow-lg cursor-pointer"
-                      onClick={() => handleImageZoom(imageUrl)}
-                      onError={(e) => {
-                        const target = e.target as HTMLImageElement;
-                        console.error('Erro ao carregar imagem:', imageUrl, 'para pedra:', stone.name);
-                        target.src = '/placeholder.svg';
-                      }}
-                    />
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="absolute top-2 right-2"
-                      onClick={() => handleImageZoom(imageUrl)}
-                    >
-                      <ZoomIn className="h-4 w-4" />
-                    </Button>
+        {isLoading && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {[...Array(6)].map((_, i) => (
+              <div key={i} className="produto border border-gray-200 rounded-lg shadow-lg bg-white p-6 space-y-4">
+                <Skeleton className="h-8 w-3/4" />
+                <Skeleton className="h-6 w-1/2" />
+                <Skeleton className="h-64 w-full" />
+                <Skeleton className="h-24 w-full" />
+              </div>
+            ))}
+          </div>
+        )}
+
+        {isError && (
+          <div className="text-center py-12">
+            <p className="text-red-600 text-lg font-semibold">
+              Ocorreu um erro ao carregar o catálogo.
+            </p>
+            <p className="text-gray-500">
+              Por favor, tente recarregar a página.
+            </p>
+          </div>
+        )}
+
+        {!isLoading && !isError && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {filteredStones.map((stone) => {
+              const imageUrl = getImageUrl(stone.image_filename);
+              console.log('Stone:', stone.name, 'Image URL:', imageUrl);
+              
+              return (
+                <div key={stone.id} className="produto border border-gray-200 rounded-lg overflow-hidden shadow-lg bg-white">
+                  <div className="p-6">
+                    <h1 className="text-2xl font-bold text-gray-800 border-b-2 border-gray-800 pb-3 mb-4">
+                      {stone.name}
+                    </h1>
                     
-                    <div className="mt-4">
-                      <Input
-                        type="file"
-                        accept="image/*"
-                        onChange={(e) => {
-                          const file = e.target.files?.[0];
-                          if (file) {
-                            handleImageUpload(file, stone.id);
-                          }
+                    <div className="font-bold text-lg mb-6">
+                      Item Name: {stone.name}
+                    </div>
+                    
+                    <div className="text-center my-8 relative">
+                      <img 
+                        src={imageUrl}
+                        alt={stone.name}
+                        className="w-full h-64 object-cover mx-auto border border-gray-300 rounded-lg shadow-lg cursor-pointer"
+                        onClick={() => handleImageZoom(imageUrl)}
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          console.error('Erro ao carregar imagem:', imageUrl, 'para pedra:', stone.name);
+                          target.src = '/placeholder.svg';
                         }}
-                        className="hidden"
-                        id={`upload-${stone.id}`}
-                        disabled={uploadingImages[stone.id]}
                       />
-                      <Label htmlFor={`upload-${stone.id}`} className="text-sm text-gray-500 cursor-pointer hover:underline flex items-center justify-center">
-                        {uploadingImages[stone.id] ? (
-                            <>
-                              <Upload className="mr-2 h-4 w-4 animate-spin" />
-                              Enviando...
-                            </>
-                          ) : (
-                            <>
-                              <Upload className="mr-2 h-4 w-4" />
-                              <span>{stone.image_filename || "Trocar Imagem"}</span>
-                            </>
-                          )}
-                      </Label>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="absolute top-2 right-2"
+                        onClick={() => handleImageZoom(imageUrl)}
+                      >
+                        <ZoomIn className="h-4 w-4" />
+                      </Button>
+                      
+                      <div className="mt-4">
+                        <Input
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              handleImageUpload(file, stone.id);
+                            }
+                          }}
+                          className="hidden"
+                          id={`upload-${stone.id}`}
+                          disabled={uploadingImages[stone.id]}
+                        />
+                        <Label htmlFor={`upload-${stone.id}`} className="text-sm text-gray-500 cursor-pointer hover:underline flex items-center justify-center">
+                          {uploadingImages[stone.id] ? (
+                              <>
+                                <Upload className="mr-2 h-4 w-4 animate-spin" />
+                                Enviando...
+                              </>
+                            ) : (
+                              <>
+                                <Upload className="mr-2 h-4 w-4" />
+                                <span>{stone.image_filename || "Trocar Imagem"}</span>
+                              </>
+                            )}
+                        </Label>
+                      </div>
+                    </div>
+                    
+                    <div className="bg-gray-100 p-6 rounded-lg">
+                      <strong className="text-lg">Technical Specifications:</strong>
+                      <ul className="mt-4 space-y-2 pl-6">
+                        <li><strong>Category:</strong> {stone.category}</li>
+                        <li><strong>Rock type:</strong> {stone.rock_type}</li>
+                        <li><strong>Available finishes:</strong> {stone.finishes}</li>
+                        <li><strong>Available in:</strong> {stone.available_in}</li>
+                        <li><strong>Base color:</strong> {stone.base_color}</li>
+                        <li><strong>Characteristics:</strong> {stone.characteristics}</li>
+                      </ul>
+                    </div>
+
+                    <div className="flex justify-between mt-4">
+                      <Button 
+                        variant="secondary"
+                        size="sm"
+                        onClick={() => handleEdit(stone)}
+                      >
+                        <Edit className="mr-2 h-4 w-4" />
+                        Editar
+                      </Button>
+                      <Button 
+                        variant="destructive"
+                        size="sm"
+                        onClick={() => handleDelete(stone.id)}
+                      >
+                        <Trash2 className="mr-2 h-4 w-4" />
+                        Deletar
+                      </Button>
                     </div>
                   </div>
-                  
-                  <div className="bg-gray-100 p-6 rounded-lg">
-                    <strong className="text-lg">Technical Specifications:</strong>
-                    <ul className="mt-4 space-y-2 pl-6">
-                      <li><strong>Category:</strong> {stone.category}</li>
-                      <li><strong>Rock type:</strong> {stone.rock_type}</li>
-                      <li><strong>Available finishes:</strong> {stone.finishes}</li>
-                      <li><strong>Available in:</strong> {stone.available_in}</li>
-                      <li><strong>Base color:</strong> {stone.base_color}</li>
-                      <li><strong>Characteristics:</strong> {stone.characteristics}</li>
-                    </ul>
-                  </div>
-
-                  <div className="flex justify-between mt-4">
-                    <Button 
-                      variant="secondary"
-                      size="sm"
-                      onClick={() => handleEdit(stone)}
-                    >
-                      <Edit className="mr-2 h-4 w-4" />
-                      Editar
-                    </Button>
-                    <Button 
-                      variant="destructive"
-                      size="sm"
-                      onClick={() => handleDelete(stone.id)}
-                    >
-                      <Trash2 className="mr-2 h-4 w-4" />
-                      Deletar
-                    </Button>
-                  </div>
                 </div>
-              </div>
-            );
-          })}
-        </div>
+              );
+            })}
+          </div>
+        )}
 
-        {filteredStones.length === 0 && (
+        {!isLoading && filteredStones.length === 0 && (
           <div className="text-center py-12">
             <p className="text-gray-500 text-lg">
               Nenhuma pedra encontrada com os filtros aplicados.
