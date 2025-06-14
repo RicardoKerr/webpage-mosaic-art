@@ -8,9 +8,12 @@ import { ArrowLeft, Edit, Trash2, Plus, Upload, Filter, X, ZoomIn, ZoomOut, Sear
 import { useNavigate } from 'react-router-dom';
 import { useImageUpload } from '@/hooks/useImageUpload';
 import { useToast } from '@/hooks/use-toast';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
+
+// A lista de pedras agora será carregada do banco de dados.
+// O código estático foi removido.
 
 interface Stone {
   id: string;
@@ -52,7 +55,22 @@ const Catalog = () => {
     base_color: '',
     search: ''
   });
-  
+
+  console.log('Estados atuais:', {
+    stonesCount: stones.length,
+    editingStone: editingStone?.id,
+    isAddingNew,
+    uploadingImagesKeys: Object.keys(uploadingImages),
+    isSupabaseConfigured,
+    showFilters,
+    activeFilters: Object.values(filters).filter(f => f !== '').length,
+    zoomedImage
+  });
+
+  const existingCategories = [...new Set(stones.map(stone => stone.category))];
+  const existingRockTypes = [...new Set(stones.map(stone => stone.rock_type))];
+  const existingColors = [...new Set(stones.map(stone => stone.base_color))];
+
   const [formData, setFormData] = useState<Omit<Stone, 'id' | 'image_filename' | 'image_url'>>({
     name: '',
     category: '',
@@ -63,9 +81,9 @@ const Catalog = () => {
     characteristics: ''
   });
 
-  const { data: fetchedStones, isLoading, isError } = useQuery<Stone[]>({
+  const { data: fetchedStones, isLoading, isError } = useQuery({
     queryKey: ['stones'],
-    queryFn: async () => {
+    queryFn: async (): Promise<Stone[]> => {
       const { data, error } = await supabase
         .from('aralogo_simples')
         .select('*')
@@ -108,9 +126,19 @@ const Catalog = () => {
     zoomedImage
   });
 
-  const existingCategories = [...new Set(stones.map(stone => stone.category).filter(Boolean))];
-  const existingRockTypes = [...new Set(stones.map(stone => stone.rock_type).filter(Boolean))];
-  const existingColors = [...new Set(stones.map(stone => stone.base_color).filter(Boolean))];
+  const existingCategories = [...new Set(stones.map(stone => stone.category))];
+  const existingRockTypes = [...new Set(stones.map(stone => stone.rock_type))];
+  const existingColors = [...new Set(stones.map(stone => stone.base_color))];
+
+  const [formData, setFormData] = useState<Omit<Stone, 'id' | 'image_filename' | 'image_url'>>({
+    name: '',
+    category: '',
+    rock_type: '',
+    finishes: '',
+    available_in: '',
+    base_color: '',
+    characteristics: ''
+  });
 
   // Filtrar pedras baseado nos filtros aplicados
   const filteredStones = stones.filter(stone => {
@@ -141,27 +169,11 @@ const Catalog = () => {
     });
   };
 
-  const updateImageMutation = useMutation({
-    mutationFn: async ({ stoneId, fileName }: { stoneId: string, fileName: string }) => {
-      const { error } = await supabase
-        .from('aralogo_simples')
-        .update({ 'Imagem_Name_Site': fileName })
-        .eq('id', stoneId);
-      if (error) throw new Error(error.message);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['stones'] });
-      toast({ title: "Sucesso", description: "Imagem atualizada com sucesso!" });
-    },
-    onError: (error: Error) => {
-      toast({ title: "Erro", description: `Falha ao atualizar imagem: ${error.message}`, variant: "destructive" });
-    }
-  });
-
   const handleImageUpload = async (file: File, stoneId: string) => {
     console.log('=== INÍCIO handleImageUpload ===');
     console.log('Stone ID:', stoneId, 'Arquivo:', file.name);
     
+    // Verificar se o Supabase está configurado
     if (!isSupabaseConfigured) {
       toast({
         title: "Supabase não configurado",
@@ -171,23 +183,42 @@ const Catalog = () => {
       return;
     }
     
-    setUploadingImages(prev => ({ ...prev, [stoneId]: true }));
+    setUploadingImages(prev => {
+      console.log('Marcando como uploading:', stoneId);
+      return { ...prev, [stoneId]: true };
+    });
     
     try {
-      const stone = stones.find(s => s.id === stoneId);
-      const stoneNameForFile = stone?.name.replace(/[^a-zA-Z0-9]/g, '_') || `stone_${stoneId}`;
-      const fileName = `${stoneNameForFile}_${Date.now()}.${file.name.split('.').pop()}`;
+      const fileName = `image_${stoneId}.${file.name.split('.').pop()}`;
+      console.log('Nome do arquivo gerado:', fileName);
       
       const imageUrl = await uploadImage(file, fileName);
+      console.log('URL retornada do upload:', imageUrl);
       
       if (imageUrl) {
-        updateImageMutation.mutate({ stoneId, fileName });
+        const { error: updateError } = await supabase
+          .from('aralogo_simples')
+          .update({ 'Imagem_Name_Site': fileName })
+          .eq('id', Number(stoneId));
 
+        if (updateError) {
+          toast({
+            title: "Erro ao salvar referência da imagem",
+            description: "A imagem foi enviada, mas a referência no banco de dados falhou.",
+            variant: "destructive",
+          });
+        } else {
+          toast({
+            title: "Sucesso",
+            description: "Imagem enviada e referência salva!",
+          });
+          queryClient.invalidateQueries({ queryKey: ['stones'] });
+        }
+        
         if (editingStone && editingStone.id === stoneId) {
           console.log('Atualizando editingStone...');
           setEditingStone(prev => prev ? { ...prev, image_url: imageUrl, image_filename: fileName } : null);
         }
-
       } else {
         toast({
           title: "Erro",
@@ -327,6 +358,49 @@ const Catalog = () => {
 
   console.log('Renderizando componente. EditingStone:', !!editingStone, 'IsAddingNew:', isAddingNew);
 
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-white">
+        <div className="max-w-7xl mx-auto p-6">
+          <div className="mb-6">
+            <Skeleton className="h-10 w-28 mb-4" />
+            <Skeleton className="h-9 w-3/4 mb-4" />
+          </div>
+          <div className="bg-gray-50 p-6 rounded-lg mb-6">
+            <Skeleton className="h-8 w-48 mb-4" />
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+              <Skeleton className="h-10 w-full" />
+              <Skeleton className="h-10 w-full" />
+              <Skeleton className="h-10 w-full" />
+              <Skeleton className="h-10 w-full" />
+            </div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {[...Array(6)].map((_, i) => (
+              <div key={i} className="border border-gray-200 rounded-lg p-6 space-y-4">
+                <Skeleton className="h-8 w-3/4" />
+                <Skeleton className="h-6 w-1/2" />
+                <Skeleton className="h-64 w-full" />
+                <Skeleton className="h-40 w-full" />
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold text-red-600 mb-2">Erro ao Carregar Catálogo</h2>
+          <p className="text-gray-600">Não foi possível buscar os dados das pedras. Por favor, tente recarregar a página.</p>
+        </div>
+      </div>
+    );
+  }
+
   if (editingStone || isAddingNew) {
     const currentStone = editingStone || {
       id: Date.now().toString(),
@@ -340,7 +414,7 @@ const Catalog = () => {
       image_filename: '',
       image_url: ''
     };
-    
+
     return (
       <div className="min-h-screen bg-white">
         <div className="max-w-4xl mx-auto p-6">
@@ -488,7 +562,7 @@ const Catalog = () => {
                     )}
                   </div>
                   <p className="text-sm text-gray-500 mt-1">
-                    A imagem será salva com um novo nome.
+                    A imagem será salva como: image_{currentStone.id}
                   </p>
                 </div>
               </div>
@@ -503,31 +577,6 @@ const Catalog = () => {
               </Button>
             </div>
           </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-white p-6">
-        <div className="max-w-7xl mx-auto">
-          <Skeleton className="h-8 w-48 mb-4" />
-          <Skeleton className="h-12 w-full mb-6" />
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {[...Array(6)].map((_, i) => <Skeleton key={i} className="h-96 w-full" />)}
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (isError) {
-    return (
-      <div className="min-h-screen bg-white p-6 flex items-center justify-center">
-        <div className="text-center">
-          <h2 className="text-xl font-semibold text-red-600">Erro ao carregar os dados</h2>
-          <p className="text-gray-500">Por favor, tente recarregar a página.</p>
         </div>
       </div>
     );
@@ -745,7 +794,7 @@ const Catalog = () => {
           })}
         </div>
 
-        {filteredStones.length === 0 && !isLoading && (
+        {filteredStones.length === 0 && (
           <div className="text-center py-12">
             <p className="text-gray-500 text-lg">
               Nenhuma pedra encontrada com os filtros aplicados.
