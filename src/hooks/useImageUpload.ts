@@ -20,10 +20,12 @@ if (isSupabaseConfigured) {
 
 /**
  * Antes de usar, certifique-se de que:
- * - O bucket 'stone-images' existe no Storage do Supabase
+ * - O bucket 'catalogosimples' existe no Storage do Supabase
  * - As policies do bucket permitem upload público pelo anon key, ou você esteja autenticado adequadamente
  */
 export const useImageUpload = () => {
+  const bucketName = 'catalogosimples';
+
   const uploadImage = async (file: File, fileName: string): Promise<string | null> => {
     try {
       if (!isSupabaseConfigured || !supabase) {
@@ -37,17 +39,17 @@ export const useImageUpload = () => {
         console.error('Erro ao listar buckets:', bucketsError);
         return null;
       }
-      const bucketExists = buckets?.some((bucket: any) => bucket.name === 'stone-images');
+      const bucketExists = buckets?.some((bucket: any) => bucket.name === bucketName);
       if (!bucketExists) {
         console.error(
-          "O bucket 'stone-images' não existe no seu Supabase. Crie manualmente via painel antes do upload."
+          `O bucket '${bucketName}' não existe no seu Supabase. Crie manualmente via painel antes do upload.`
         );
         return null;
       }
 
       // Upload
       const { data, error } = await supabase.storage
-        .from('stone-images')
+        .from(bucketName)
         .upload(fileName, file, {
           upsert: true,
         });
@@ -63,7 +65,7 @@ export const useImageUpload = () => {
 
       // URL pública
       const { data: urlData } = supabase.storage
-        .from('stone-images')
+        .from(bucketName)
         .getPublicUrl(fileName);
 
       if (!urlData?.publicUrl) {
