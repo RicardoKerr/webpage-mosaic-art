@@ -1,10 +1,11 @@
+
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { ArrowLeft, Edit, Trash2, Plus, Upload } from 'lucide-react';
+import { ArrowLeft, Edit, Trash2, Plus, Upload, Filter, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useImageUpload } from '@/hooks/useImageUpload';
 import { useToast } from '@/hooks/use-toast';
@@ -98,6 +99,13 @@ interface Stone {
   image_url: string;
 }
 
+interface Filters {
+  category: string;
+  rock_type: string;
+  base_color: string;
+  search: string;
+}
+
 const Catalog = () => {
   console.log('=== RENDERIZANDO CATALOG ===');
   
@@ -108,13 +116,22 @@ const Catalog = () => {
   const [editingStone, setEditingStone] = useState<Stone | null>(null);
   const [isAddingNew, setIsAddingNew] = useState(false);
   const [uploadingImages, setUploadingImages] = useState<{[key: string]: boolean}>({});
+  const [showFilters, setShowFilters] = useState(false);
+  const [filters, setFilters] = useState<Filters>({
+    category: '',
+    rock_type: '',
+    base_color: '',
+    search: ''
+  });
 
   console.log('Estados atuais:', {
     stonesCount: stones.length,
     editingStone: editingStone?.id,
     isAddingNew,
     uploadingImagesKeys: Object.keys(uploadingImages),
-    isSupabaseConfigured
+    isSupabaseConfigured,
+    showFilters,
+    activeFilters: Object.values(filters).filter(f => f !== '').length
   });
 
   const existingCategories = [...new Set(stones.map(stone => stone.category))];
@@ -131,8 +148,33 @@ const Catalog = () => {
     characteristics: ''
   });
 
+  // Filtrar pedras baseado nos filtros aplicados
+  const filteredStones = stones.filter(stone => {
+    const matchesCategory = !filters.category || stone.category === filters.category;
+    const matchesRockType = !filters.rock_type || stone.rock_type === filters.rock_type;
+    const matchesColor = !filters.base_color || stone.base_color === filters.base_color;
+    const matchesSearch = !filters.search || 
+      stone.name.toLowerCase().includes(filters.search.toLowerCase()) ||
+      stone.characteristics.toLowerCase().includes(filters.search.toLowerCase());
+    
+    return matchesCategory && matchesRockType && matchesColor && matchesSearch;
+  });
+
   const handleInputChange = (key: keyof Omit<Stone, 'id' | 'image_filename' | 'image_url'>, value: string) => {
     setFormData(prev => ({ ...prev, [key]: value }));
+  };
+
+  const handleFilterChange = (key: keyof Filters, value: string) => {
+    setFilters(prev => ({ ...prev, [key]: value }));
+  };
+
+  const clearFilters = () => {
+    setFilters({
+      category: '',
+      rock_type: '',
+      base_color: '',
+      search: ''
+    });
   };
 
   const handleImageUpload = async (file: File, stoneId: string) => {
@@ -205,6 +247,55 @@ const Catalog = () => {
       });
       console.log('=== FIM handleImageUpload ===');
     }
+  };
+
+  // Upload em lote
+  const handleBulkImageUpload = async (files: FileList) => {
+    console.log('=== INÍCIO UPLOAD EM LOTE ===');
+    console.log('Arquivos selecionados:', files.length);
+    
+    if (!isSupabaseConfigured) {
+      toast({
+        title: "Supabase não configurado",
+        description: "Para fazer upload de imagens, conecte seu projeto ao Supabase nas configurações.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const fileArray = Array.from(files);
+    
+    for (let i = 0; i < fileArray.length; i++) {
+      const file = fileArray[i];
+      const newStoneId = (Date.now() + i).toString();
+      
+      // Criar nova pedra
+      const newStone: Stone = {
+        id: newStoneId,
+        name: `Nova Pedra ${newStoneId}`,
+        category: 'Noble Stones',
+        rock_type: 'Marble',
+        finishes: 'Polished, Honed',
+        available_in: 'Slab',
+        base_color: 'Variado',
+        characteristics: 'Aguardando descrição',
+        image_filename: '',
+        image_url: ''
+      };
+      
+      // Adicionar ao estado
+      setStones(prev => [...prev, newStone]);
+      
+      // Fazer upload da imagem
+      await handleImageUpload(file, newStoneId);
+    }
+    
+    toast({
+      title: "Upload em lote iniciado",
+      description: `Processando ${fileArray.length} imagens...`,
+    });
+    
+    console.log('=== FIM UPLOAD EM LOTE ===');
   };
 
   const handleEdit = (stone: Stone) => {
@@ -451,14 +542,117 @@ const Catalog = () => {
           <h1 className="text-3xl font-bold text-gray-900 mb-4">
             Catálogo de Pedras Naturais
           </h1>
-          <Button onClick={handleAdd}>
-            <Plus className="mr-2 h-4 w-4" />
-            Adicionar Pedra
-          </Button>
+          
+          <div className="flex flex-wrap gap-4 mb-6">
+            <Button onClick={handleAdd}>
+              <Plus className="mr-2 h-4 w-4" />
+              Adicionar Pedra
+            </Button>
+            
+            <div>
+              <Input
+                type="file"
+                accept="image/*"
+                multiple
+                onChange={(e) => {
+                  if (e.target.files && e.target.files.length > 0) {
+                    handleBulkImageUpload(e.target.files);
+                  }
+                }}
+                className="hidden"
+                id="bulk-upload"
+              />
+              <Label htmlFor="bulk-upload" asChild>
+                <Button variant="outline">
+                  <Upload className="mr-2 h-4 w-4" />
+                  Upload em Lote
+                </Button>
+              </Label>
+            </div>
+            
+            <Button 
+              variant="outline" 
+              onClick={() => setShowFilters(!showFilters)}
+            >
+              <Filter className="mr-2 h-4 w-4" />
+              Filtros {Object.values(filters).filter(f => f !== '').length > 0 && `(${Object.values(filters).filter(f => f !== '').length})`}
+            </Button>
+          </div>
+
+          {showFilters && (
+            <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-6">
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div>
+                  <Label htmlFor="search-filter">Buscar</Label>
+                  <Input
+                    id="search-filter"
+                    placeholder="Nome ou características..."
+                    value={filters.search}
+                    onChange={(e) => handleFilterChange('search', e.target.value)}
+                  />
+                </div>
+                
+                <div>
+                  <Label htmlFor="category-filter">Categoria</Label>
+                  <Select value={filters.category} onValueChange={(value) => handleFilterChange('category', value)}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Todas" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">Todas</SelectItem>
+                      {existingCategories.map(category => (
+                        <SelectItem key={category} value={category}>{category}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div>
+                  <Label htmlFor="rock-type-filter">Tipo de Rocha</Label>
+                  <Select value={filters.rock_type} onValueChange={(value) => handleFilterChange('rock_type', value)}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Todos" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">Todos</SelectItem>
+                      {existingRockTypes.map(rockType => (
+                        <SelectItem key={rockType} value={rockType}>{rockType}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div>
+                  <Label htmlFor="color-filter">Cor Base</Label>
+                  <Select value={filters.base_color} onValueChange={(value) => handleFilterChange('base_color', value)}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Todas" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">Todas</SelectItem>
+                      {existingColors.map(color => (
+                        <SelectItem key={color} value={color}>{color}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              
+              <div className="flex justify-between items-center mt-4">
+                <p className="text-sm text-gray-600">
+                  Mostrando {filteredStones.length} de {stones.length} pedras
+                </p>
+                <Button variant="outline" size="sm" onClick={clearFilters}>
+                  <X className="mr-2 h-4 w-4" />
+                  Limpar Filtros
+                </Button>
+              </div>
+            </div>
+          )}
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {stones.map((stone) => (
+          {filteredStones.map((stone) => (
             <div key={stone.id} className="produto border border-gray-200 rounded-lg overflow-hidden shadow-lg bg-white">
               <div className="p-6">
                 <h1 className="text-2xl font-bold text-gray-800 border-b-2 border-gray-800 pb-3 mb-4">
@@ -511,6 +705,17 @@ const Catalog = () => {
             </div>
           ))}
         </div>
+
+        {filteredStones.length === 0 && (
+          <div className="text-center py-12">
+            <p className="text-gray-500 text-lg">
+              Nenhuma pedra encontrada com os filtros aplicados.
+            </p>
+            <Button variant="outline" onClick={clearFilters} className="mt-4">
+              Limpar Filtros
+            </Button>
+          </div>
+        )}
       </div>
     </div>
   );
