@@ -721,7 +721,7 @@ const Catalog = () => {
             </Button>
             
             <div>
-              <Input
+              <input
                 type="file"
                 accept="image/*"
                 multiple
@@ -733,12 +733,10 @@ const Catalog = () => {
                 className="hidden"
                 id="bulk-upload"
               />
-              <Label htmlFor="bulk-upload" asChild>
-                <Button variant="outline">
-                  <Upload className="mr-2 h-4 w-4" />
-                  Upload em Lote
-                </Button>
-              </Label>
+              <Button variant="outline" onClick={() => document.getElementById('bulk-upload')?.click()}>
+                <Upload className="mr-2 h-4 w-4" />
+                Upload em Lote
+              </Button>
             </div>
             
             <Button 

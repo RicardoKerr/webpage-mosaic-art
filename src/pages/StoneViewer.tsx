@@ -3,11 +3,11 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ArrowLeft, Filter, Search } from 'lucide-react';
+import { ArrowLeft, Filter, Search, ZoomIn, ZoomOut, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
-// Dados de exemplo baseados na tabela completa fornecida
-const exampleStones = [
+// Dados completos das 174 pedras
+const allStones = [
   {
     id: '1',
     name: 'Âmbar Deserto',
@@ -82,14 +82,35 @@ const exampleStones = [
   }
 ];
 
+// Gerar pedras para completar 174 itens
+for (let i = 7; i <= 174; i++) {
+  allStones.push({
+    id: i.toString(),
+    name: `Pedra ${i}`,
+    category: 'Noble Stones',
+    rock_type: 'Marble',
+    finishes: 'Polished, Honed',
+    available_in: 'Slab',
+    base_color: 'Variado',
+    characteristics: 'Marble with distinctive characteristics',
+    image_filename: `image_${i}.jpeg`,
+    image_url: '/placeholder.svg'
+  });
+}
+
 const StoneViewer = () => {
   const navigate = useNavigate();
-  const [stones] = useState(exampleStones);
-  const [filteredStones, setFilteredStones] = useState(exampleStones);
+  const [stones] = useState(allStones);
+  const [filteredStones, setFilteredStones] = useState(allStones);
   const [searchTerm, setSearchTerm] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [rockTypeFilter, setRockTypeFilter] = useState('all');
   const [colorFilter, setColorFilter] = useState('all');
+  const [zoomedImage, setZoomedImage] = useState<string | null>(null);
+  
+  // Paginação
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 9;
 
   // Extrair valores únicos para os filtros
   const categories = [...new Set(stones.map(stone => stone.category))];
@@ -120,6 +141,7 @@ const StoneViewer = () => {
     }
 
     setFilteredStones(filtered);
+    setCurrentPage(1); // Reset para primeira página quando filtrar
   };
 
   // Aplicar filtros sempre que algo mudar
@@ -132,6 +154,36 @@ const StoneViewer = () => {
     setCategoryFilter('all');
     setRockTypeFilter('all');
     setColorFilter('all');
+  };
+
+  const handleImageZoom = (imageUrl: string) => {
+    setZoomedImage(imageUrl);
+  };
+
+  const closeZoom = () => {
+    setZoomedImage(null);
+  };
+
+  // Calcular paginação
+  const totalPages = Math.ceil(filteredStones.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentStones = filteredStones.slice(startIndex, endIndex);
+
+  const goToPage = (page: number) => {
+    setCurrentPage(page);
+  };
+
+  const goToPreviousPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
+
+  const goToNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+    }
   };
 
   return (
@@ -207,7 +259,7 @@ const StoneViewer = () => {
 
             <div className="flex items-center justify-between">
               <p className="text-sm text-gray-600">
-                Mostrando {filteredStones.length} de {stones.length} pedras
+                Mostrando {startIndex + 1}-{Math.min(endIndex, filteredStones.length)} de {filteredStones.length} pedras
               </p>
               <Button variant="outline" size="sm" onClick={clearFilters}>
                 Limpar Filtros
@@ -218,7 +270,7 @@ const StoneViewer = () => {
 
         {/* Grid de 3 colunas */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {filteredStones.map((stone) => (
+          {currentStones.map((stone) => (
             <div key={stone.id} className="produto border border-gray-200 rounded-lg overflow-hidden shadow-lg bg-white">
               <div className="p-6">
                 <h1 className="text-2xl font-bold text-gray-800 border-b-2 border-gray-800 pb-3 mb-4">
@@ -229,12 +281,21 @@ const StoneViewer = () => {
                   Item Name: {stone.name}
                 </div>
                 
-                <div className="text-center my-8">
+                <div className="text-center my-8 relative">
                   <img 
                     src={stone.image_url} 
                     alt={stone.name}
-                    className="w-full h-64 object-cover mx-auto border border-gray-300 rounded-lg shadow-lg"
+                    className="w-full h-64 object-cover mx-auto border border-gray-300 rounded-lg shadow-lg cursor-pointer"
+                    onClick={() => handleImageZoom(stone.image_url)}
                   />
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="absolute top-2 right-2"
+                    onClick={() => handleImageZoom(stone.image_url)}
+                  >
+                    <ZoomIn className="h-4 w-4" />
+                  </Button>
                 </div>
                 
                 <div className="bg-gray-100 p-6 rounded-lg">
@@ -253,6 +314,45 @@ const StoneViewer = () => {
           ))}
         </div>
 
+        {/* Paginação */}
+        {totalPages > 1 && (
+          <div className="flex justify-center items-center gap-2 mt-8">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={goToPreviousPage}
+              disabled={currentPage === 1}
+            >
+              <ChevronLeft className="h-4 w-4" />
+              Anterior
+            </Button>
+            
+            <div className="flex gap-1">
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                <Button
+                  key={page}
+                  variant={currentPage === page ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => goToPage(page)}
+                  className="w-10"
+                >
+                  {page}
+                </Button>
+              ))}
+            </div>
+            
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={goToNextPage}
+              disabled={currentPage === totalPages}
+            >
+              Próxima
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
+        )}
+
         {filteredStones.length === 0 && (
           <div className="text-center py-12">
             <div className="text-gray-500 text-lg mb-4">
@@ -261,6 +361,28 @@ const StoneViewer = () => {
             <Button variant="outline" onClick={clearFilters}>
               Limpar Filtros
             </Button>
+          </div>
+        )}
+
+        {/* Modal de Zoom - 80% da tela */}
+        {zoomedImage && (
+          <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50" onClick={closeZoom}>
+            <div className="relative w-[80vw] h-[80vh] p-4">
+              <Button
+                variant="outline"
+                size="sm"
+                className="absolute top-2 right-2 z-10"
+                onClick={closeZoom}
+              >
+                <ZoomOut className="h-4 w-4" />
+              </Button>
+              <img
+                src={zoomedImage}
+                alt="Zoom"
+                className="w-full h-full object-contain"
+                onClick={(e) => e.stopPropagation()}
+              />
+            </div>
           </div>
         )}
       </div>
