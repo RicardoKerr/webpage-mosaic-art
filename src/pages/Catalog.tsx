@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -219,12 +218,49 @@ const allStones = [
   }
 ];
 
+// Generate proper stone names for remaining IDs
+const stoneNames = [
+  'Ágata Brasileira', 'Mármore Clássico', 'Granito Imperial', 'Pedra do Rio', 'Cristal Amazônico',
+  'Rocha Dourada', 'Mármore Real', 'Pedra Lunar', 'Granito Tropical', 'Mármore dos Andes',
+  'Quartzo Natural', 'Pedra Selvagem', 'Mármore Oceânico', 'Granito do Norte', 'Pedra Vulcânica',
+  'Mármore Régio', 'Granito Solar', 'Pedra Mística', 'Mármore Celeste', 'Quartzo Puro',
+  'Pedra Amazônica', 'Mármore Nobre', 'Granito Moderno', 'Pedra Elegante', 'Mármore Luxo',
+  'Granito Premium', 'Pedra Exclusiva', 'Mármore Único', 'Granito Especial', 'Pedra Rara',
+  'Mármore Supremo', 'Granito Elite', 'Pedra Divina', 'Mármore Majestoso', 'Granito Nobre',
+  'Pedra Celestial', 'Mármore Exótico', 'Granito Refinado', 'Pedra Magnífica', 'Mármore Glorioso',
+  'Granito Extraordinário', 'Pedra Sublime', 'Mármore Radiante', 'Granito Luminoso', 'Pedra Brilhante',
+  'Mármore Esplêndido', 'Granito Majestoso', 'Pedra Real', 'Mármore Divino', 'Granito Celestial',
+  'Pedra Nobre', 'Mármore Eterno', 'Granito Infinito', 'Pedra Eterna', 'Mármore Infinito',
+  'Granito Eterno', 'Pedra Infinita', 'Mármore Perpétuo', 'Granito Perpétuo', 'Pedra Perpétua',
+  'Mármore Duradouro', 'Granito Duradouro', 'Pedra Duradoura', 'Mármore Resistente', 'Granito Resistente',
+  'Pedra Resistente', 'Mármore Forte', 'Granito Forte', 'Pedra Forte', 'Mármore Sólido',
+  'Granito Sólido', 'Pedra Sólida', 'Mármore Firme', 'Granito Firme', 'Pedra Firme',
+  'Mármore Estável', 'Granito Estável', 'Pedra Estável', 'Mármore Confiável', 'Granito Confiável',
+  'Pedra Confiável', 'Mármore Seguro', 'Granito Seguro', 'Pedra Segura', 'Mármore Garantido',
+  'Granito Garantido', 'Pedra Garantida', 'Mármore Certificado', 'Granito Certificado', 'Pedra Certificada',
+  'Mármore Aprovado', 'Granito Aprovado', 'Pedra Aprovada', 'Mármore Testado', 'Granito Testado',
+  'Pedra Testada', 'Mármore Validado', 'Granito Validado', 'Pedra Validada', 'Mármore Confirmado',
+  'Granito Confirmado', 'Pedra Confirmada', 'Mármore Verificado', 'Granito Verificado', 'Pedra Verificada',
+  'Mármore Autenticado', 'Granito Autenticado', 'Pedra Autenticada', 'Mármore Original', 'Granito Original',
+  'Pedra Original', 'Mármore Genuíno', 'Granito Genuíno', 'Pedra Genuína', 'Mármore Verdadeiro',
+  'Granito Verdadeiro', 'Pedra Verdadeira', 'Mármore Natural', 'Granito Natural', 'Pedra Natural',
+  'Mármore Puro', 'Granito Puro', 'Pedra Pura', 'Mármore Limpo', 'Granito Limpo',
+  'Pedra Limpa', 'Mármore Claro', 'Granito Claro', 'Pedra Clara', 'Mármore Transparente',
+  'Granito Transparente', 'Pedra Transparente', 'Mármore Cristalino', 'Granito Cristalino', 'Pedra Cristalina',
+  'Mármore Brilhoso', 'Granito Brilhoso', 'Pedra Brilhosa', 'Mármore Polido', 'Granito Polido',
+  'Pedra Polida', 'Mármore Lustrado', 'Granito Lustrado', 'Pedra Lustrada', 'Mármore Refinado',
+  'Granito Refinado', 'Pedra Refinada', 'Mármore Lapidado', 'Granito Lapidado', 'Pedra Lapidada',
+  'Mármore Trabalhado', 'Granito Trabalhado', 'Pedra Trabalhada', 'Mármore Esculpido', 'Granito Esculpido',
+  'Pedra Esculpida', 'Mármore Modelado', 'Granito Modelado', 'Pedra Modelada', 'Mármore Formado'
+];
+
 // Add all remaining stones to reach 174 total
 for (let i = 11; i <= 173; i++) {
   if (!allStones.find(stone => stone.id === i.toString())) {
+    const nameIndex = (i - 11) % stoneNames.length;
     allStones.push({
       id: i.toString(),
-      name: `Pedra ${i}`,
+      name: stoneNames[nameIndex],
       category: 'Noble Stones',
       rock_type: 'Marble',
       finishes: 'Polished, Honed',
