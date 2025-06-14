@@ -7,9 +7,9 @@ export const useImageStorage = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const uploadImageToStorage = async (file: File, materialId: string): Promise<string | null> => {
+  const uploadImageToStorage = async (file: File, materialName: string): Promise<string | null> => {
     try {
-      const fileName = `materials/${materialId}/${Date.now()}_${file.name}`;
+      const fileName = `materials/${materialName}/${Date.now()}_${file.name}`;
       
       const { data, error: uploadError } = await supabase.storage
         .from('catalogosimples')
@@ -41,16 +41,16 @@ export const useImageStorage = () => {
       if (!imageUrl) throw new Error("Image upload failed");
 
       const { error } = await supabase
-        .from('materials')
-        .update({ main_image_url: imageUrl })
-        .eq('id', materialId);
+        .from('aralogo_simples')
+        .update({ "Caminho da Imagem": imageUrl })
+        .eq('Nome', materialId);
       
       if (error) throw error;
       
       return imageUrl;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['materials'] });
+      queryClient.invalidateQueries({ queryKey: ['aralogo_materials'] });
       toast({ title: "Success", description: "Image uploaded successfully!" });
     },
     onError: (error: Error) => {

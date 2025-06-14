@@ -10,37 +10,33 @@ import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { useImageStorage } from '@/hooks/useImageStorage';
 
 interface Material {
-  id: string;
-  commercial_name: string;
-  category: string;
-  rock_type: string;
-  base_color: string;
-  origin: string;
-  description: string;
-  main_image_url: string;
-  is_active: boolean;
-  supplier_id: string | null;
-  finishes: string[];
-  applications: string[];
+  Nome: string;
+  Categoria: string;
+  "Tipo de Rocha": string;
+  "Acabamentos Disponíveis": string;
+  "Disponível em": string;
+  "Cor Base": string;
+  Características: string;
+  "Caminho da Imagem": string;
 }
 
 interface MaterialFormData {
-  commercial_name: string;
-  category: string;
-  rock_type: string;
-  base_color: string;
-  origin: string;
-  description: string;
-  finishes: string;
-  applications: string;
+  Nome: string;
+  Categoria: string;
+  "Tipo de Rocha": string;
+  "Acabamentos Disponíveis": string;
+  "Disponível em": string;
+  "Cor Base": string;
+  Características: string;
 }
 
 interface Filters {
-  category: string;
-  rock_type: string;
-  base_color: string;
+  Categoria: string;
+  "Tipo de Rocha": string;
+  "Cor Base": string;
   search: string;
 }
 
@@ -50,6 +46,7 @@ const Catalog = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { uploadImage } = useImageStorage();
 
   const [editingMaterial, setEditingMaterial] = useState<Material | null>(null);
   const [isAddingNew, setIsAddingNew] = useState(false);
@@ -57,33 +54,18 @@ const Catalog = () => {
   const [showFilters, setShowFilters] = useState(false);
   const [zoomedImage, setZoomedImage] = useState<string | null>(null);
   const [filters, setFilters] = useState<Filters>({
-    category: '',
-    rock_type: '',
-    base_color: '',
+    Categoria: '',
+    "Tipo de Rocha": '',
+    "Cor Base": '',
     search: ''
   });
 
   const fetchMaterials = async (): Promise<Material[]> => {
-    console.log('Fetching materials from database...');
+    console.log('Fetching materials from aralogo_simples table...');
     
     const { data, error } = await supabase
-      .from('materials')
-      .select(`
-        id,
-        commercial_name,
-        category,
-        rock_type,
-        base_color,
-        origin,
-        description,
-        main_image_url,
-        is_active,
-        supplier_id,
-        material_finishes(finish_name),
-        material_applications(application_name)
-      `)
-      .eq('is_active', true)
-      .order('commercial_name');
+      .from('aralogo_simples')
+      .select('*');
 
     if (error) {
       console.error('Error fetching materials:', error);
@@ -91,104 +73,36 @@ const Catalog = () => {
     }
 
     console.log('Fetched materials:', data?.length || 0);
-
-    return data.map((material: any) => ({
-      id: material.id,
-      commercial_name: material.commercial_name,
-      category: material.category,
-      rock_type: material.rock_type,
-      base_color: material.base_color,
-      origin: material.origin,
-      description: material.description || '',
-      main_image_url: material.main_image_url || '/placeholder.svg',
-      is_active: material.is_active,
-      supplier_id: material.supplier_id,
-      finishes: material.material_finishes?.map((f: any) => f.finish_name) || [],
-      applications: material.material_applications?.map((a: any) => a.application_name) || [],
-    }));
+    
+    return data || [];
   };
 
   const { data: materials = [], isLoading, isError, error } = useQuery<Material[], Error>({
-    queryKey: ['materials'],
+    queryKey: ['aralogo_materials'],
     queryFn: fetchMaterials,
   });
-
-  const uploadImageToStorage = async (file: File, materialId: string): Promise<string | null> => {
-    try {
-      const fileName = `materials/${materialId}/${Date.now()}_${file.name}`;
-      
-      const { data, error: uploadError } = await supabase.storage
-        .from('catalogosimples')
-        .upload(fileName, file, {
-          upsert: true,
-        });
-
-      if (uploadError) {
-        console.error('Storage upload error:', uploadError);
-        throw new Error(`Upload failed: ${uploadError.message}`);
-      }
-
-      const { data: urlData } = supabase.storage
-        .from('catalogosimples')
-        .getPublicUrl(fileName);
-
-      return urlData.publicUrl;
-    } catch (error) {
-      console.error('Image upload error:', error);
-      return null;
-    }
-  };
 
   const createMutation = useMutation({
     mutationFn: async (formData: MaterialFormData) => {
       console.log('Creating new material:', formData);
       
-      const { data: material, error: materialError } = await supabase
-        .from('materials')
+      const { error } = await supabase
+        .from('aralogo_simples')
         .insert({
-          commercial_name: formData.commercial_name,
-          category: formData.category,
-          rock_type: formData.rock_type,
-          base_color: formData.base_color,
-          origin: formData.origin,
-          description: formData.description,
-          main_image_url: '/placeholder.svg',
-        })
-        .select('id')
-        .single();
+          Nome: formData.Nome,
+          Categoria: formData.Categoria,
+          "Tipo de Rocha": formData["Tipo de Rocha"],
+          "Acabamentos Disponíveis": formData["Acabamentos Disponíveis"],
+          "Disponível em": formData["Disponível em"],
+          "Cor Base": formData["Cor Base"],
+          Características: formData.Características,
+          "Caminho da Imagem": '/placeholder.svg',
+        });
       
-      if (materialError) throw materialError;
-      
-      const materialId = material.id;
-      
-      // Add finishes
-      const finishes = formData.finishes.split(',').map(f => f.trim()).filter(Boolean);
-      if (finishes.length > 0) {
-        const { error: finishesError } = await supabase
-          .from('material_finishes')
-          .insert(finishes.map(finish => ({ 
-            material_id: materialId, 
-            finish_name: finish 
-          })));
-        if (finishesError) throw finishesError;
-      }
-
-      // Add applications
-      const applications = formData.applications.split(',').map(a => a.trim()).filter(Boolean);
-      if (applications.length > 0) {
-        const { error: applicationsError } = await supabase
-          .from('material_applications')
-          .insert(applications.map(app => ({ 
-            material_id: materialId, 
-            application_name: app 
-          })));
-        if (applicationsError) throw applicationsError;
-      }
-
-      return materialId;
+      if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['materials'] });
+      queryClient.invalidateQueries({ queryKey: ['aralogo_materials'] });
       toast({ title: "Success", description: "Material created successfully." });
       handleCancel();
     },
@@ -199,52 +113,26 @@ const Catalog = () => {
   });
 
   const updateMutation = useMutation({
-    mutationFn: async ({ id, formData }: { id: string, formData: MaterialFormData }) => {
-      console.log('Updating material:', id, formData);
+    mutationFn: async ({ originalName, formData }: { originalName: string, formData: MaterialFormData }) => {
+      console.log('Updating material:', originalName, formData);
       
-      // Update main material
-      const { error: materialError } = await supabase
-        .from('materials')
+      const { error } = await supabase
+        .from('aralogo_simples')
         .update({
-          commercial_name: formData.commercial_name,
-          category: formData.category,
-          rock_type: formData.rock_type,
-          base_color: formData.base_color,
-          origin: formData.origin,
-          description: formData.description,
+          Nome: formData.Nome,
+          Categoria: formData.Categoria,
+          "Tipo de Rocha": formData["Tipo de Rocha"],
+          "Acabamentos Disponíveis": formData["Acabamentos Disponíveis"],
+          "Disponível em": formData["Disponível em"],
+          "Cor Base": formData["Cor Base"],
+          Características: formData.Características,
         })
-        .eq('id', id);
+        .eq('Nome', originalName);
 
-      if (materialError) throw materialError;
-      
-      // Update finishes
-      await supabase.from('material_finishes').delete().eq('material_id', id);
-      const finishes = formData.finishes.split(',').map(f => f.trim()).filter(Boolean);
-      if (finishes.length > 0) {
-        const { error: finishesError } = await supabase
-          .from('material_finishes')
-          .insert(finishes.map(finish => ({ 
-            material_id: id, 
-            finish_name: finish 
-          })));
-        if (finishesError) throw finishesError;
-      }
-
-      // Update applications
-      await supabase.from('material_applications').delete().eq('material_id', id);
-      const applications = formData.applications.split(',').map(a => a.trim()).filter(Boolean);
-      if (applications.length > 0) {
-        const { error: applicationsError } = await supabase
-          .from('material_applications')
-          .insert(applications.map(app => ({ 
-            material_id: id, 
-            application_name: app 
-          })));
-        if (applicationsError) throw applicationsError;
-      }
+      if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['materials'] });
+      queryClient.invalidateQueries({ queryKey: ['aralogo_materials'] });
       toast({ title: "Success", description: "Material updated successfully." });
       handleCancel();
     },
@@ -255,20 +143,18 @@ const Catalog = () => {
   });
   
   const deleteMutation = useMutation({
-    mutationFn: async (id: string) => {
-      console.log('Deleting material:', id);
+    mutationFn: async (nome: string) => {
+      console.log('Deleting material:', nome);
       
-      // Delete related records first
-      await supabase.from('material_finishes').delete().eq('material_id', id);
-      await supabase.from('material_applications').delete().eq('material_id', id);
-      await supabase.from('material_images').delete().eq('material_id', id);
+      const { error } = await supabase
+        .from('aralogo_simples')
+        .delete()
+        .eq('Nome', nome);
       
-      // Delete main material
-      const { error } = await supabase.from('materials').delete().eq('id', id);
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['materials'] });
+      queryClient.invalidateQueries({ queryKey: ['aralogo_materials'] });
       toast({ title: 'Success', description: 'Material deleted successfully.' });
     },
     onError: (error: Error) => {
@@ -278,36 +164,35 @@ const Catalog = () => {
   });
 
   const imageUploadMutation = useMutation({
-    mutationFn: async ({ file, materialId }: { file: File, materialId: string }) => {
-      console.log('Uploading image for material:', materialId);
+    mutationFn: async ({ file, materialName }: { file: File, materialName: string }) => {
+      console.log('Uploading image for material:', materialName);
       
-      const imageUrl = await uploadImageToStorage(file, materialId);
-      if (!imageUrl) throw new Error("Image upload failed");
-
+      const imageUrl = await uploadImage.mutateAsync({ file, materialId: materialName });
+      
       const { error } = await supabase
-        .from('materials')
-        .update({ main_image_url: imageUrl })
-        .eq('id', materialId);
+        .from('aralogo_simples')
+        .update({ "Caminho da Imagem": imageUrl })
+        .eq('Nome', materialName);
       
       if (error) throw error;
       
       return imageUrl;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['materials'] });
+      queryClient.invalidateQueries({ queryKey: ['aralogo_materials'] });
       toast({ title: "Success", description: "Image uploaded successfully!" });
     },
     onError: (error: Error) => {
       console.error('Image upload error:', error);
       toast({ title: "Error", description: error.message, variant: "destructive" });
     },
-    onMutate: ({ materialId }) => {
-       setUploadingImages(prev => ({ ...prev, [materialId]: true }));
+    onMutate: ({ materialName }) => {
+       setUploadingImages(prev => ({ ...prev, [materialName]: true }));
     },
-    onSettled: (_data, _error, { materialId }) => {
+    onSettled: (_data, _error, { materialName }) => {
       setUploadingImages(prev => {
         const newState = { ...prev };
-        delete newState[materialId];
+        delete newState[materialName];
         return newState;
       });
     }
@@ -317,21 +202,22 @@ const Catalog = () => {
     mutationFn: async (file: File) => {
       console.log('Creating material from bulk upload:', file.name);
       
-      const materialId = await createMutation.mutateAsync({
-        commercial_name: `New Material - ${file.name.split('.')[0]}`,
-        category: 'New Releases',
-        rock_type: 'Unknown',
-        base_color: 'Varied',
-        origin: 'Unknown',
-        description: 'Awaiting description',
-        finishes: '',
-        applications: '',
+      const materialName = `New Material - ${file.name.split('.')[0]}`;
+      
+      await createMutation.mutateAsync({
+        Nome: materialName,
+        Categoria: 'New Releases',
+        "Tipo de Rocha": 'Unknown',
+        "Cor Base": 'Varied',
+        "Acabamentos Disponíveis": 'Polished',
+        "Disponível em": 'Slab',
+        Características: 'Awaiting description',
       });
 
-      await imageUploadMutation.mutateAsync({ file, materialId });
+      await imageUploadMutation.mutateAsync({ file, materialName });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['materials'] });
+      queryClient.invalidateQueries({ queryKey: ['aralogo_materials'] });
     },
     onError: (error: Error) => {
       console.error('Bulk upload error:', error);
@@ -341,7 +227,7 @@ const Catalog = () => {
 
   console.log('Current state:', {
     materialsCount: materials.length,
-    editingMaterial: editingMaterial?.id,
+    editingMaterial: editingMaterial?.Nome,
     isAddingNew,
     uploadingImagesKeys: Object.keys(uploadingImages),
     showFilters,
@@ -349,28 +235,27 @@ const Catalog = () => {
     zoomedImage
   });
 
-  const existingCategories = [...new Set(materials.map(m => m.category))];
-  const existingRockTypes = [...new Set(materials.map(m => m.rock_type))];
-  const existingColors = [...new Set(materials.map(m => m.base_color))];
+  const existingCategories = [...new Set(materials.map(m => m.Categoria).filter(Boolean))];
+  const existingRockTypes = [...new Set(materials.map(m => m["Tipo de Rocha"]).filter(Boolean))];
+  const existingColors = [...new Set(materials.map(m => m["Cor Base"]).filter(Boolean))];
 
   const [formData, setFormData] = useState<MaterialFormData>({
-    commercial_name: '',
-    category: '',
-    rock_type: '',
-    base_color: '',
-    origin: '',
-    description: '',
-    finishes: '',
-    applications: ''
+    Nome: '',
+    Categoria: '',
+    "Tipo de Rocha": '',
+    "Cor Base": '',
+    "Acabamentos Disponíveis": '',
+    "Disponível em": '',
+    Características: ''
   });
 
   const filteredMaterials = materials.filter(material => {
-    const matchesCategory = !filters.category || material.category === filters.category;
-    const matchesRockType = !filters.rock_type || material.rock_type === filters.rock_type;
-    const matchesColor = !filters.base_color || material.base_color === filters.base_color;
+    const matchesCategory = !filters.Categoria || material.Categoria === filters.Categoria;
+    const matchesRockType = !filters["Tipo de Rocha"] || material["Tipo de Rocha"] === filters["Tipo de Rocha"];
+    const matchesColor = !filters["Cor Base"] || material["Cor Base"] === filters["Cor Base"];
     const matchesSearch = !filters.search || 
-      material.commercial_name.toLowerCase().includes(filters.search.toLowerCase()) ||
-      material.description.toLowerCase().includes(filters.search.toLowerCase());
+      material.Nome?.toLowerCase().includes(filters.search.toLowerCase()) ||
+      material.Características?.toLowerCase().includes(filters.search.toLowerCase());
     
     return matchesCategory && matchesRockType && matchesColor && matchesSearch;
   });
@@ -385,15 +270,15 @@ const Catalog = () => {
 
   const clearFilters = () => {
     setFilters({
-      category: '',
-      rock_type: '',
-      base_color: '',
+      Categoria: '',
+      "Tipo de Rocha": '',
+      "Cor Base": '',
       search: ''
     });
   };
 
-  const handleImageUpload = (file: File, materialId: string) => {
-    imageUploadMutation.mutate({ file, materialId });
+  const handleImageUpload = (file: File, materialName: string) => {
+    imageUploadMutation.mutate({ file, materialName });
   };
 
   const handleBulkImageUpload = async (files: FileList) => {
@@ -413,26 +298,25 @@ const Catalog = () => {
   const handleEdit = (material: Material) => {
     setEditingMaterial(material);
     setFormData({
-      commercial_name: material.commercial_name,
-      category: material.category,
-      rock_type: material.rock_type,
-      base_color: material.base_color,
-      origin: material.origin,
-      description: material.description,
-      finishes: material.finishes.join(', '),
-      applications: material.applications.join(', '),
+      Nome: material.Nome || '',
+      Categoria: material.Categoria || '',
+      "Tipo de Rocha": material["Tipo de Rocha"] || '',
+      "Cor Base": material["Cor Base"] || '',
+      "Acabamentos Disponíveis": material["Acabamentos Disponíveis"] || '',
+      "Disponível em": material["Disponível em"] || '',
+      Características: material.Características || '',
     });
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = (nome: string) => {
     if (window.confirm('Tem certeza que deseja deletar este material?')) {
-      deleteMutation.mutate(id);
+      deleteMutation.mutate(nome);
     }
   };
 
   const handleSave = () => {
     if (editingMaterial) {
-      updateMutation.mutate({ id: editingMaterial.id, formData });
+      updateMutation.mutate({ originalName: editingMaterial.Nome, formData });
     } else if (isAddingNew) {
       createMutation.mutate(formData);
     }
@@ -441,14 +325,13 @@ const Catalog = () => {
   const handleAdd = () => {
     setIsAddingNew(true);
     setFormData({
-      commercial_name: '',
-      category: '',
-      rock_type: '',
-      base_color: '',
-      origin: '',
-      description: '',
-      finishes: '',
-      applications: '',
+      Nome: '',
+      Categoria: '',
+      "Tipo de Rocha": '',
+      "Cor Base": '',
+      "Acabamentos Disponíveis": '',
+      "Disponível em": '',
+      Características: '',
     });
   };
 
@@ -479,7 +362,7 @@ const Catalog = () => {
       <div className="flex flex-col justify-center items-center min-h-screen text-red-500">
         <h2 className="text-xl font-bold mb-2">Erro ao carregar materiais</h2>
         <p className="text-gray-600 mb-4">{error?.message}</p>
-        <Button onClick={() => queryClient.invalidateQueries({ queryKey: ['materials'] })}>
+        <Button onClick={() => queryClient.invalidateQueries({ queryKey: ['aralogo_materials'] })}>
           Tentar Novamente
         </Button>
       </div>
@@ -488,18 +371,14 @@ const Catalog = () => {
 
   if (editingMaterial || isAddingNew) {
     const currentMaterial = editingMaterial || {
-      id: 'new',
-      commercial_name: '',
-      category: '',
-      rock_type: '',
-      base_color: '',
-      origin: '',
-      description: '',
-      main_image_url: '/placeholder.svg',
-      is_active: true,
-      supplier_id: null,
-      finishes: [],
-      applications: [],
+      Nome: '',
+      Categoria: '',
+      "Tipo de Rocha": '',
+      "Cor Base": '',
+      "Acabamentos Disponíveis": '',
+      "Disponível em": '',
+      Características: '',
+      "Caminho da Imagem": '/placeholder.svg',
     };
 
     return (
@@ -522,19 +401,19 @@ const Catalog = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-4">
                 <div>
-                  <Label htmlFor="commercial_name">Nome Comercial</Label>
+                  <Label htmlFor="Nome">Nome</Label>
                   <Input
-                    id="commercial_name"
+                    id="Nome"
                     type="text"
-                    value={formData.commercial_name}
-                    onChange={(e) => handleInputChange('commercial_name', e.target.value)}
-                    placeholder="Nome comercial do material"
+                    value={formData.Nome}
+                    onChange={(e) => handleInputChange('Nome', e.target.value)}
+                    placeholder="Nome do material"
                   />
                 </div>
 
                 <div>
-                  <Label htmlFor="category">Categoria</Label>
-                  <Select value={formData.category} onValueChange={(value) => handleInputChange('category', value)}>
+                  <Label htmlFor="Categoria">Categoria</Label>
+                  <Select value={formData.Categoria} onValueChange={(value) => handleInputChange('Categoria', value)}>
                     <SelectTrigger>
                       <SelectValue placeholder="Selecione a categoria" />
                     </SelectTrigger>
@@ -542,17 +421,19 @@ const Catalog = () => {
                       {existingCategories.map(category => (
                         <SelectItem key={category} value={category}>{category}</SelectItem>
                       ))}
-                      <SelectItem value="Granitos">Granitos</SelectItem>
-                      <SelectItem value="Mármores">Mármores</SelectItem>
-                      <SelectItem value="Quartzitos">Quartzitos</SelectItem>
+                      <SelectItem value="Noble Stones">Noble Stones</SelectItem>
                       <SelectItem value="New Releases">New Releases</SelectItem>
+                      <SelectItem value="Exotics">Exotics</SelectItem>
+                      <SelectItem value="Classics">Classics</SelectItem>
+                      <SelectItem value="Granites">Granites</SelectItem>
+                      <SelectItem value="Quartzites">Quartzites</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
 
                 <div>
-                  <Label htmlFor="rock_type">Tipo de Rocha</Label>
-                  <Select value={formData.rock_type} onValueChange={(value) => handleInputChange('rock_type', value)}>
+                  <Label htmlFor="Tipo de Rocha">Tipo de Rocha</Label>
+                  <Select value={formData["Tipo de Rocha"]} onValueChange={(value) => handleInputChange('Tipo de Rocha', value)}>
                     <SelectTrigger>
                       <SelectValue placeholder="Selecione o tipo de rocha" />
                     </SelectTrigger>
@@ -560,17 +441,17 @@ const Catalog = () => {
                       {existingRockTypes.map(rockType => (
                         <SelectItem key={rockType} value={rockType}>{rockType}</SelectItem>
                       ))}
-                      <SelectItem value="Granito">Granito</SelectItem>
-                      <SelectItem value="Mármore">Mármore</SelectItem>
-                      <SelectItem value="Quartzito">Quartzito</SelectItem>
-                      <SelectItem value="Unknown">Unknown</SelectItem>
+                      <SelectItem value="Marble">Marble</SelectItem>
+                      <SelectItem value="Granite">Granite</SelectItem>
+                      <SelectItem value="Quartzite">Quartzite</SelectItem>
+                      <SelectItem value="Quartz">Quartz</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
 
                 <div>
-                  <Label htmlFor="base_color">Cor Base</Label>
-                  <Select value={formData.base_color} onValueChange={(value) => handleInputChange('base_color', value)}>
+                  <Label htmlFor="Cor Base">Cor Base</Label>
+                  <Select value={formData["Cor Base"]} onValueChange={(value) => handleInputChange('Cor Base', value)}>
                     <SelectTrigger>
                       <SelectValue placeholder="Selecione a cor base" />
                     </SelectTrigger>
@@ -578,57 +459,44 @@ const Catalog = () => {
                       {existingColors.map(color => (
                         <SelectItem key={color} value={color}>{color}</SelectItem>
                       ))}
-                      <SelectItem value="Branco">Branco</SelectItem>
-                      <SelectItem value="Preto">Preto</SelectItem>
-                      <SelectItem value="Cinza">Cinza</SelectItem>
-                      <SelectItem value="Bege">Bege</SelectItem>
-                      <SelectItem value="Marrom">Marrom</SelectItem>
-                      <SelectItem value="Verde">Verde</SelectItem>
-                      <SelectItem value="Azul">Azul</SelectItem>
-                      <SelectItem value="Varied">Varied</SelectItem>
+                      <SelectItem value="White">White</SelectItem>
+                      <SelectItem value="Black">Black</SelectItem>
+                      <SelectItem value="Gray">Gray</SelectItem>
+                      <SelectItem value="Beige">Beige</SelectItem>
+                      <SelectItem value="Green">Green</SelectItem>
+                      <SelectItem value="Blue">Blue</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
 
                 <div>
-                  <Label htmlFor="origin">Origem</Label>
+                  <Label htmlFor="Acabamentos Disponíveis">Acabamentos Disponíveis</Label>
                   <Input
-                    id="origin"
+                    id="Acabamentos Disponíveis"
                     type="text"
-                    value={formData.origin}
-                    onChange={(e) => handleInputChange('origin', e.target.value)}
-                    placeholder="País/região de origem"
+                    value={formData["Acabamentos Disponíveis"]}
+                    onChange={(e) => handleInputChange('Acabamentos Disponíveis', e.target.value)}
+                    placeholder="Ex: Polished, Honed"
                   />
                 </div>
 
                 <div>
-                  <Label htmlFor="finishes">Acabamentos</Label>
+                  <Label htmlFor="Disponível em">Disponível em</Label>
                   <Input
-                    id="finishes"
+                    id="Disponível em"
                     type="text"
-                    value={formData.finishes}
-                    onChange={(e) => handleInputChange('finishes', e.target.value)}
-                    placeholder="Acabamentos disponíveis (separados por vírgula)"
+                    value={formData["Disponível em"]}
+                    onChange={(e) => handleInputChange('Disponível em', e.target.value)}
+                    placeholder="Ex: Slab, Tiles"
                   />
                 </div>
 
                 <div>
-                  <Label htmlFor="applications">Aplicações</Label>
-                  <Input
-                    id="applications"
-                    type="text"
-                    value={formData.applications}
-                    onChange={(e) => handleInputChange('applications', e.target.value)}
-                    placeholder="Aplicações/formatos (separados por vírgula)"
-                  />
-                </div>
-
-                <div>
-                  <Label htmlFor="description">Descrição</Label>
+                  <Label htmlFor="Características">Características</Label>
                   <Textarea
-                    id="description"
-                    value={formData.description}
-                    onChange={(e) => handleInputChange('description', e.target.value)}
+                    id="Características"
+                    value={formData.Características}
+                    onChange={(e) => handleInputChange('Características', e.target.value)}
                     placeholder="Descreva as características do material"
                     className="min-h-[100px]"
                   />
@@ -638,19 +506,19 @@ const Catalog = () => {
               <div className="space-y-4">
                 <div>
                   <Label>Imagem Atual</Label>
-                  {currentMaterial.main_image_url && (
+                  {currentMaterial["Caminho da Imagem"] && (
                     <div className="relative">
                       <img 
-                        src={currentMaterial.main_image_url} 
-                        alt={currentMaterial.commercial_name}
+                        src={currentMaterial["Caminho da Imagem"]} 
+                        alt={currentMaterial.Nome}
                         className="w-full h-48 object-cover border border-gray-300 rounded-lg cursor-pointer"
-                        onClick={() => handleImageZoom(currentMaterial.main_image_url)}
+                        onClick={() => handleImageZoom(currentMaterial["Caminho da Imagem"])}
                       />
                       <Button
                         variant="outline"
                         size="sm"
                         className="absolute top-2 right-2"
-                        onClick={() => handleImageZoom(currentMaterial.main_image_url)}
+                        onClick={() => handleImageZoom(currentMaterial["Caminho da Imagem"])}
                       >
                         <ZoomIn className="h-4 w-4" />
                       </Button>
@@ -667,17 +535,17 @@ const Catalog = () => {
                       accept="image/*"
                       onChange={(e) => {
                         const file = e.target.files?.[0];
-                        if (file && currentMaterial.id !== 'new') {
-                          handleImageUpload(file, currentMaterial.id);
+                        if (file && currentMaterial.Nome !== '') {
+                          handleImageUpload(file, currentMaterial.Nome);
                         }
                       }}
-                      disabled={uploadingImages[currentMaterial.id] || currentMaterial.id === 'new'}
+                      disabled={uploadingImages[currentMaterial.Nome] || currentMaterial.Nome === ''}
                     />
-                    {uploadingImages[currentMaterial.id] && (
+                    {uploadingImages[currentMaterial.Nome] && (
                       <Loader2 className="h-4 w-4 animate-spin" />
                     )}
                   </div>
-                  {currentMaterial.id === 'new' && (
+                  {currentMaterial.Nome === '' && (
                     <p className="text-sm text-gray-500 mt-1">
                       Salve o material primeiro para fazer upload da imagem
                     </p>
@@ -769,7 +637,7 @@ const Catalog = () => {
                 
                 <div>
                   <Label htmlFor="category-filter">Categoria</Label>
-                  <Select value={filters.category} onValueChange={(value) => handleFilterChange('category', value)}>
+                  <Select value={filters.Categoria} onValueChange={(value) => handleFilterChange('Categoria', value)}>
                     <SelectTrigger>
                       <SelectValue placeholder="Todas" />
                     </SelectTrigger>
@@ -784,7 +652,7 @@ const Catalog = () => {
                 
                 <div>
                   <Label htmlFor="rock-type-filter">Tipo de Rocha</Label>
-                  <Select value={filters.rock_type} onValueChange={(value) => handleFilterChange('rock_type', value)}>
+                  <Select value={filters["Tipo de Rocha"]} onValueChange={(value) => handleFilterChange('Tipo de Rocha', value)}>
                     <SelectTrigger>
                       <SelectValue placeholder="Todos" />
                     </SelectTrigger>
@@ -799,7 +667,7 @@ const Catalog = () => {
                 
                 <div>
                   <Label htmlFor="color-filter">Cor Base</Label>
-                  <Select value={filters.base_color} onValueChange={(value) => handleFilterChange('base_color', value)}>
+                  <Select value={filters["Cor Base"]} onValueChange={(value) => handleFilterChange('Cor Base', value)}>
                     <SelectTrigger>
                       <SelectValue placeholder="Todas" />
                     </SelectTrigger>
@@ -827,29 +695,29 @@ const Catalog = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {filteredMaterials.map((material) => (
-            <div key={material.id} className="produto border border-gray-200 rounded-lg overflow-hidden shadow-lg bg-white">
+          {filteredMaterials.map((material, index) => (
+            <div key={`${material.Nome}-${index}`} className="produto border border-gray-200 rounded-lg overflow-hidden shadow-lg bg-white">
               <div className="p-6">
                 <h1 className="text-2xl font-bold text-gray-800 border-b-2 border-gray-800 pb-3 mb-4">
-                  {material.commercial_name}
+                  {material.Nome}
                 </h1>
                 
                 <div className="font-bold text-lg mb-6">
-                  Item Name: {material.commercial_name} ({material.origin})
+                  Item Name: {material.Nome}
                 </div>
                 
                 <div className="text-center my-8 relative">
                   <img 
-                    src={material.main_image_url} 
-                    alt={material.commercial_name}
+                    src={material["Caminho da Imagem"] || '/placeholder.svg'} 
+                    alt={material.Nome}
                     className="w-full h-64 object-cover mx-auto border border-gray-300 rounded-lg shadow-lg cursor-pointer"
-                    onClick={() => handleImageZoom(material.main_image_url)}
+                    onClick={() => handleImageZoom(material["Caminho da Imagem"] || '/placeholder.svg')}
                   />
                   <Button
                     variant="outline"
                     size="sm"
                     className="absolute top-2 right-2"
-                    onClick={() => handleImageZoom(material.main_image_url)}
+                    onClick={() => handleImageZoom(material["Caminho da Imagem"] || '/placeholder.svg')}
                   >
                     <ZoomIn className="h-4 w-4" />
                   </Button>
@@ -861,16 +729,16 @@ const Catalog = () => {
                       onChange={(e) => {
                         const file = e.target.files?.[0];
                         if (file) {
-                          handleImageUpload(file, material.id);
+                          handleImageUpload(file, material.Nome);
                         }
                       }}
                       className="hidden"
-                      id={`upload-${material.id}`}
-                      disabled={uploadingImages[material.id] || imageUploadMutation.isPending}
+                      id={`upload-${material.Nome}-${index}`}
+                      disabled={uploadingImages[material.Nome] || imageUploadMutation.isPending}
                     />
-                    <Label htmlFor={`upload-${material.id}`} asChild>
-                      <Button variant="outline" size="sm" disabled={uploadingImages[material.id] || (imageUploadMutation.isPending && imageUploadMutation.variables?.materialId === material.id)}>
-                        {(uploadingImages[material.id] || (imageUploadMutation.isPending && imageUploadMutation.variables?.materialId === material.id)) ? (
+                    <Label htmlFor={`upload-${material.Nome}-${index}`} asChild>
+                      <Button variant="outline" size="sm" disabled={uploadingImages[material.Nome] || (imageUploadMutation.isPending && imageUploadMutation.variables?.materialName === material.Nome)}>
+                        {(uploadingImages[material.Nome] || (imageUploadMutation.isPending && imageUploadMutation.variables?.materialName === material.Nome)) ? (
                           <>
                             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                             Enviando...
@@ -889,13 +757,12 @@ const Catalog = () => {
                 <div className="bg-gray-100 p-6 rounded-lg">
                   <strong className="text-lg">Technical Specifications:</strong>
                   <ul className="mt-4 space-y-2 pl-6">
-                    <li><strong>Category:</strong> {material.category}</li>
-                    <li><strong>Rock type:</strong> {material.rock_type}</li>
-                    <li><strong>Available finishes:</strong> {material.finishes.join(', ') || 'N/A'}</li>
-                    <li><strong>Available in:</strong> {material.applications.join(', ') || 'N/A'}</li>
-                    <li><strong>Base color:</strong> {material.base_color}</li>
-                    <li><strong>Origin:</strong> {material.origin}</li>
-                    <li><strong>Characteristics:</strong> {material.description || 'N/A'}</li>
+                    <li><strong>Category:</strong> {material.Categoria}</li>
+                    <li><strong>Rock type:</strong> {material["Tipo de Rocha"]}</li>
+                    <li><strong>Available finishes:</strong> {material["Acabamentos Disponíveis"] || 'N/A'}</li>
+                    <li><strong>Available in:</strong> {material["Disponível em"] || 'N/A'}</li>
+                    <li><strong>Base color:</strong> {material["Cor Base"]}</li>
+                    <li><strong>Characteristics:</strong> {material.Características || 'N/A'}</li>
                   </ul>
                 </div>
 
@@ -911,10 +778,10 @@ const Catalog = () => {
                   <Button 
                     variant="destructive"
                     size="sm"
-                    onClick={() => handleDelete(material.id)}
-                    disabled={deleteMutation.isPending && deleteMutation.variables === material.id}
+                    onClick={() => handleDelete(material.Nome)}
+                    disabled={deleteMutation.isPending && deleteMutation.variables === material.Nome}
                   >
-                    {deleteMutation.isPending && deleteMutation.variables === material.id ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Trash2 className="mr-2 h-4 w-4" />}
+                    {deleteMutation.isPending && deleteMutation.variables === material.Nome ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Trash2 className="mr-2 h-4 w-4" />}
                     Deletar
                   </Button>
                 </div>
