@@ -1,0 +1,211 @@
+
+import React from 'react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
+import { ArrowLeft, Upload, ZoomIn } from 'lucide-react';
+import { Stone, StoneFormData } from './types';
+
+interface StoneFormProps {
+  isAddingNew: boolean;
+  editingStone: Stone | null;
+  formData: StoneFormData;
+  onInputChange: (key: keyof StoneFormData, value: string) => void;
+  onSave: () => void;
+  onCancel: () => void;
+  onImageUpload: (file: File, stoneId: string) => void;
+  onImageZoom: (imageUrl: string) => void;
+  getImageUrl: (fileName: string) => string;
+  isUploading: boolean;
+  isSaving: boolean;
+  existingCategories: string[];
+  existingRockTypes: string[];
+  existingColors: string[];
+}
+
+const StoneForm: React.FC<StoneFormProps> = ({
+  isAddingNew,
+  editingStone,
+  formData,
+  onInputChange,
+  onSave,
+  onCancel,
+  onImageUpload,
+  onImageZoom,
+  getImageUrl,
+  isUploading,
+  isSaving,
+  existingCategories,
+  existingRockTypes,
+  existingColors,
+}) => {
+  const title = isAddingNew ? 'Adicionar Nova Pedra' : 'Editar Pedra';
+  
+  return (
+    <div className="min-h-screen bg-white">
+      <div className="max-w-4xl mx-auto p-6">
+        <Button 
+          variant="outline" 
+          onClick={onCancel}
+          className="mb-4"
+        >
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          Voltar
+        </Button>
+        
+        <h1 className="text-3xl font-bold text-gray-900 mb-6">{title}</h1>
+
+        <div className="bg-white border border-gray-200 rounded-lg p-6">
+          <div className={`grid grid-cols-1 ${!isAddingNew ? 'md:grid-cols-2' : ''} gap-6`}>
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="name">Nome</Label>
+                <Input
+                  id="name"
+                  type="text"
+                  value={formData.name}
+                  onChange={(e) => onInputChange('name', e.target.value)}
+                  placeholder="Nome da pedra"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="category">Categoria</Label>
+                <Select value={formData.category} onValueChange={(value) => onInputChange('category', value)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione a categoria" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {existingCategories.map(category => (
+                      <SelectItem key={category} value={category}>{category}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <Label htmlFor="rock_type">Tipo de Rocha</Label>
+                <Select value={formData.rock_type} onValueChange={(value) => onInputChange('rock_type', value)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione o tipo de rocha" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {existingRockTypes.map(rockType => (
+                      <SelectItem key={rockType} value={rockType}>{rockType}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <Label htmlFor="finishes">Acabamentos</Label>
+                <Input
+                  id="finishes"
+                  type="text"
+                  value={formData.finishes}
+                  onChange={(e) => onInputChange('finishes', e.target.value)}
+                  placeholder="Acabamentos disponíveis"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="available_in">Disponível em</Label>
+                <Input
+                  id="available_in"
+                  type="text"
+                  value={formData.available_in}
+                  onChange={(e) => onInputChange('available_in', e.target.value)}
+                  placeholder="Formatos disponíveis"
+                />
+              </div>
+              
+              <div>
+                <Label htmlFor="base_color">Cor Base</Label>
+                <Select value={formData.base_color} onValueChange={(value) => onInputChange('base_color', value)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione a cor base" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {existingColors.map(color => (
+                      <SelectItem key={color} value={color}>{color}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <Label htmlFor="characteristics">Características</Label>
+                <Textarea
+                  id="characteristics"
+                  value={formData.characteristics}
+                  onChange={(e) => onInputChange('characteristics', e.target.value)}
+                  placeholder="Descreva as características da pedra"
+                  className="min-h-[100px]"
+                />
+              </div>
+            </div>
+            
+            {!isAddingNew && editingStone && (
+              <div className="space-y-4">
+                <div>
+                  <Label>Imagem Atual</Label>
+                  <div className="relative">
+                    <img 
+                      src={getImageUrl(editingStone.image_filename)}
+                      alt={editingStone.name}
+                      className="w-full h-48 object-cover border border-gray-300 rounded-lg cursor-pointer"
+                      onClick={() => onImageZoom(getImageUrl(editingStone.image_filename))}
+                    />
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="absolute top-2 right-2"
+                      onClick={() => onImageZoom(getImageUrl(editingStone.image_filename))}
+                    >
+                      <ZoomIn className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+
+                <div>
+                  <Label htmlFor="image_upload">Substituir Imagem</Label>
+                  <div className="flex items-center gap-2">
+                    <Input
+                      id="image_upload"
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          onImageUpload(file, editingStone.id);
+                        }
+                      }}
+                      disabled={isUploading}
+                    />
+                    {isUploading && (
+                      <Upload className="h-4 w-4 animate-spin" />
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div className="flex gap-2 mt-6">
+            <Button onClick={onSave} disabled={isSaving}>
+              {isSaving && <Upload className="mr-2 h-4 w-4 animate-spin" />}
+              {isAddingNew ? 'Adicionar' : 'Salvar'}
+            </Button>
+            <Button variant="outline" onClick={onCancel}>
+              Cancelar
+            </Button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default StoneForm;
