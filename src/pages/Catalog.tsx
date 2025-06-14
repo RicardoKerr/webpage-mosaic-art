@@ -260,9 +260,9 @@ for (let i = 11; i <= 173; i++) {
     const nameIndex = (i - 11) % stoneNames.length;
     
     let image_filename = `image_${i}.jpeg`;
-    // Specific fix for "Mármore Clássico" (ID 12), trying a different extension
-    if (i === 12) {
-      image_filename = 'image_12.png';
+    // Specific fix for stones with different image extensions
+    if (i === 12 || i === 13 || i === 16) {
+      image_filename = `image_${i}.png`;
     }
 
     allStones.push({
