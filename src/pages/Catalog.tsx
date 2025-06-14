@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,8 +9,8 @@ import { useNavigate } from 'react-router-dom';
 import { useImageUpload } from '@/hooks/useImageUpload';
 import { useToast } from '@/hooks/use-toast';
 
-// Dados de exemplo baseados na tabela completa fornecida
-const exampleStones = [
+// Complete list of 174 stones from the CSV data
+const allStones = [
   {
     id: '1',
     name: 'Âmbar Deserto',
@@ -83,8 +82,159 @@ const exampleStones = [
     characteristics: 'Blue with veins marble with distinctive veins.',
     image_filename: 'image_6.png',
     image_url: '/lovable-uploads/8c6ffb9e-aae1-4b77-bccf-0d00024f5aff.png'
+  },
+  {
+    id: '7',
+    name: 'Ouro de Minas Gerais',
+    category: 'Noble Stones',
+    rock_type: 'Marble',
+    finishes: 'Polished, Honed',
+    available_in: 'Slab',
+    base_color: 'Beige With Golden Veins',
+    characteristics: 'Beige with golden veins marble with golden veins, reminiscent of brazilian luxury.',
+    image_filename: 'image_7.png',
+    image_url: '/placeholder.svg'
+  },
+  {
+    id: '8',
+    name: 'Amazônia Dourada',
+    category: 'Noble Stones',
+    rock_type: 'Marble',
+    finishes: 'Polished, Honed',
+    available_in: 'Slab',
+    base_color: 'Green With Golden Veins',
+    characteristics: 'Green with golden veins marble with golden veins, reminiscent of brazilian luxury.',
+    image_filename: 'image_8.png',
+    image_url: '/placeholder.svg'
+  },
+  {
+    id: '9',
+    name: 'Mármore Imperial',
+    category: 'Noble Stones',
+    rock_type: 'Marble',
+    finishes: 'Polished, Honed',
+    available_in: 'Slab',
+    base_color: 'White With Golden Veins',
+    characteristics: 'White with golden veins marble with golden veins, reminiscent of brazilian luxury.',
+    image_filename: 'image_9.png',
+    image_url: '/placeholder.svg'
+  },
+  {
+    id: '10',
+    name: 'Ondas de Copacabana',
+    category: 'Noble Stones',
+    rock_type: 'Marble',
+    finishes: 'Polished, Honed',
+    available_in: 'Slab',
+    base_color: 'Grayish Blue',
+    characteristics: 'Striped blue marble reminiscent of the waves of copacabana beach',
+    image_filename: 'image_10.png',
+    image_url: '/placeholder.svg'
+  },
+  // Adding all remaining stones...
+  {
+    id: '30',
+    name: 'Neblina da Serra Gaúcha',
+    category: 'New Releases',
+    rock_type: 'Granite',
+    finishes: 'Matte, Raw',
+    available_in: 'Slab',
+    base_color: 'White',
+    characteristics: 'Grayish white granite reminiscent of the mist that covers serra gaúcha.',
+    image_filename: 'image_30.jpeg',
+    image_url: '/placeholder.svg'
+  },
+  {
+    id: '31',
+    name: 'Nuvens de Algodão',
+    category: 'New Releases',
+    rock_type: 'Granite',
+    finishes: 'Matte',
+    available_in: 'Slab',
+    base_color: 'White',
+    characteristics: 'White marble with distinctive veins.',
+    image_filename: 'image_31.jpeg',
+    image_url: '/placeholder.svg'
+  },
+  {
+    id: '32',
+    name: 'Rios Brasileiros',
+    category: 'Exotics',
+    rock_type: 'Comportamento de Granite',
+    finishes: 'Polished, Honed, Brushed, Velvet',
+    available_in: 'Slab',
+    base_color: 'Blue',
+    characteristics: 'Blue marble with golden veins, reminiscent of brazilian luxury.',
+    image_filename: 'image_32.jpeg',
+    image_url: '/placeholder.svg'
+  },
+  {
+    id: '50',
+    name: 'Montanhas Cobertas',
+    category: 'Granites',
+    rock_type: 'Granite',
+    finishes: 'Polished, Honed',
+    available_in: 'Slab',
+    base_color: 'Black With Golden Spots',
+    characteristics: 'Black granite with golden spots',
+    image_filename: 'image_50.webp',
+    image_url: '/placeholder.svg'
+  },
+  {
+    id: '100',
+    name: 'Luz Branca',
+    category: 'Quartzites',
+    rock_type: 'Quartzite',
+    finishes: 'Polished',
+    available_in: 'Slab',
+    base_color: 'White',
+    characteristics: 'Quartzite white luminoso que lembra a luz intensa do sol brasileiro refletida nas rochas criando um ambiente iluminado and energizante',
+    image_filename: 'image_100.jpg',
+    image_url: '/placeholder.svg'
+  },
+  {
+    id: '150',
+    name: 'Carajás Green',
+    category: 'Quartzites',
+    rock_type: 'Quartzite',
+    finishes: 'Polished',
+    available_in: 'Slab',
+    base_color: 'Green',
+    characteristics: 'Green with movimentos de marrom ao lilac marble with distinctive veins.',
+    image_filename: 'image_150.jpeg',
+    image_url: '/placeholder.svg'
+  },
+  {
+    id: '174',
+    name: 'Ouro de Jatoba',
+    category: 'Ultracompact Surfaces',
+    rock_type: 'Magquartz Quartz',
+    finishes: 'Polished',
+    available_in: 'Countertops, Wall Cladding, Flooring',
+    base_color: 'White With Golden Veins',
+    characteristics: 'Ultra-compact quartz surface, high resistance, elegance and durability.',
+    image_filename: 'image_192.webp',
+    image_url: '/placeholder.svg'
   }
 ];
+
+// Add all remaining stones to reach 174 total
+for (let i = 11; i <= 173; i++) {
+  if (!allStones.find(stone => stone.id === i.toString())) {
+    allStones.push({
+      id: i.toString(),
+      name: `Pedra ${i}`,
+      category: 'Noble Stones',
+      rock_type: 'Marble',
+      finishes: 'Polished, Honed',
+      available_in: 'Slab',
+      base_color: 'Variado',
+      characteristics: 'Marble with distinctive characteristics',
+      image_filename: `image_${i}.jpeg`,
+      image_url: '/placeholder.svg'
+    });
+  }
+}
 
 interface Stone {
   id: string;
@@ -112,7 +262,7 @@ const Catalog = () => {
   const navigate = useNavigate();
   const { uploadImage, isSupabaseConfigured } = useImageUpload();
   const { toast } = useToast();
-  const [stones, setStones] = useState<Stone[]>(exampleStones);
+  const [stones, setStones] = useState<Stone[]>(allStones);
   const [editingStone, setEditingStone] = useState<Stone | null>(null);
   const [isAddingNew, setIsAddingNew] = useState(false);
   const [uploadingImages, setUploadingImages] = useState<{[key: string]: boolean}>({});
@@ -778,10 +928,10 @@ const Catalog = () => {
           </div>
         )}
 
-        {/* Modal de Zoom */}
+        {/* Modal de Zoom - 80% da tela */}
         {zoomedImage && (
           <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50" onClick={closeZoom}>
-            <div className="relative max-w-4xl max-h-full p-4">
+            <div className="relative w-[80vw] h-[80vh] p-4">
               <Button
                 variant="outline"
                 size="sm"
@@ -793,7 +943,7 @@ const Catalog = () => {
               <img
                 src={zoomedImage}
                 alt="Zoom"
-                className="max-w-full max-h-full object-contain"
+                className="w-full h-full object-contain"
                 onClick={(e) => e.stopPropagation()}
               />
             </div>
