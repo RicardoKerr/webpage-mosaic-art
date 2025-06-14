@@ -87,9 +87,9 @@ const StoneViewer = () => {
   const [stones] = useState(exampleStones);
   const [filteredStones, setFilteredStones] = useState(exampleStones);
   const [searchTerm, setSearchTerm] = useState('');
-  const [categoryFilter, setCategoryFilter] = useState('');
-  const [rockTypeFilter, setRockTypeFilter] = useState('');
-  const [colorFilter, setColorFilter] = useState('');
+  const [categoryFilter, setCategoryFilter] = useState('all');
+  const [rockTypeFilter, setRockTypeFilter] = useState('all');
+  const [colorFilter, setColorFilter] = useState('all');
 
   // Extrair valores únicos para os filtros
   const categories = [...new Set(stones.map(stone => stone.category))];
@@ -107,15 +107,15 @@ const StoneViewer = () => {
       );
     }
 
-    if (categoryFilter) {
+    if (categoryFilter && categoryFilter !== 'all') {
       filtered = filtered.filter(stone => stone.category === categoryFilter);
     }
 
-    if (rockTypeFilter) {
+    if (rockTypeFilter && rockTypeFilter !== 'all') {
       filtered = filtered.filter(stone => stone.rock_type === rockTypeFilter);
     }
 
-    if (colorFilter) {
+    if (colorFilter && colorFilter !== 'all') {
       filtered = filtered.filter(stone => stone.base_color === colorFilter);
     }
 
@@ -129,9 +129,9 @@ const StoneViewer = () => {
 
   const clearFilters = () => {
     setSearchTerm('');
-    setCategoryFilter('');
-    setRockTypeFilter('');
-    setColorFilter('');
+    setCategoryFilter('all');
+    setRockTypeFilter('all');
+    setColorFilter('all');
   };
 
   return (
@@ -173,7 +173,7 @@ const StoneViewer = () => {
                   <SelectValue placeholder="Categoria" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Todas as categorias</SelectItem>
+                  <SelectItem value="all">Todas as categorias</SelectItem>
                   {categories.map(category => (
                     <SelectItem key={category} value={category}>{category}</SelectItem>
                   ))}
@@ -185,7 +185,7 @@ const StoneViewer = () => {
                   <SelectValue placeholder="Tipo de Rocha" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Todos os tipos</SelectItem>
+                  <SelectItem value="all">Todos os tipos</SelectItem>
                   {rockTypes.map(type => (
                     <SelectItem key={type} value={type}>{type}</SelectItem>
                   ))}
@@ -197,7 +197,7 @@ const StoneViewer = () => {
                   <SelectValue placeholder="Cor Base" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Todas as cores</SelectItem>
+                  <SelectItem value="all">Todas as cores</SelectItem>
                   {colors.map(color => (
                     <SelectItem key={color} value={color}>{color}</SelectItem>
                   ))}
