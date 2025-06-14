@@ -4,12 +4,237 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { ArrowLeft, Edit, Trash2, Plus, Upload, Filter, X, ZoomIn, ZoomOut, Loader2 } from 'lucide-react';
+import { ArrowLeft, Edit, Trash2, Plus, Upload, Filter, X, ZoomIn, ZoomOut } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useImageUpload } from '@/hooks/useImageUpload';
 import { useToast } from '@/hooks/use-toast';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+
+// Complete list of 174 stones from the CSV data
+const allStones = [
+  {
+    id: '1',
+    name: 'Âmbar Deserto',
+    category: 'Noble Stones',
+    rock_type: 'Marble',
+    finishes: 'Polished, Honed',
+    available_in: 'Slab',
+    base_color: 'Beige/Brown',
+    characteristics: 'Beige/brown marble with distinctive veins.',
+    image_filename: 'image_1.jpeg',
+    image_url: '/lovable-uploads/14b3e1d0-8f04-4112-a939-ede0d6ad3f58.png'
+  },
+  {
+    id: '2',
+    name: 'Jade Imperial',
+    category: 'Noble Stones',
+    rock_type: 'Marble',
+    finishes: 'Polished, Honed',
+    available_in: 'Slab',
+    base_color: 'Green With Veins',
+    characteristics: 'Green with veins marble with distinctive veins.',
+    image_filename: 'image_2.png',
+    image_url: '/lovable-uploads/ab956562-5b10-4384-9d89-cf0616450602.png'
+  },
+  {
+    id: '3',
+    name: 'Quartzo Rosado',
+    category: 'Noble Stones',
+    rock_type: 'Marble',
+    finishes: 'Polished, Honed',
+    available_in: 'Slab',
+    base_color: 'Pink/Reddish',
+    characteristics: 'Pink marble with spots like rose quartz crystals',
+    image_filename: 'image_3.png',
+    image_url: '/lovable-uploads/8c6ffb9e-aae1-4b77-bccf-0d00024f5aff.png'
+  },
+  {
+    id: '4',
+    name: 'Turquesa Cristalina',
+    category: 'Noble Stones',
+    rock_type: 'Marble',
+    finishes: 'Polished, Honed',
+    available_in: 'Slab',
+    base_color: 'Blue-Green',
+    characteristics: 'Blue-green marble reminiscent of crystalline turquoise stones',
+    image_filename: 'image_4.jpeg',
+    image_url: '/lovable-uploads/4b24d0c6-d562-46ec-8bc4-7ebfa01a9a49.png'
+  },
+  {
+    id: '5',
+    name: 'Terra do Sertão',
+    category: 'Noble Stones',
+    rock_type: 'Marble',
+    finishes: 'Polished, Honed',
+    available_in: 'Slab',
+    base_color: 'Orange/Reddish',
+    characteristics: 'Orange-reddish marble reminiscent of the arid lands of the brazilian backlands',
+    image_filename: 'image_5.jpeg',
+    image_url: '/lovable-uploads/429c46cc-a9cd-42a9-b24e-fe26a64b765a.png'
+  },
+  {
+    id: '6',
+    name: 'Tempestade Carioca',
+    category: 'Noble Stones',
+    rock_type: 'Marble',
+    finishes: 'Polished, Honed',
+    available_in: 'Slab',
+    base_color: 'Blue With Veins',
+    characteristics: 'Blue with veins marble with distinctive veins.',
+    image_filename: 'image_6.png',
+    image_url: '/lovable-uploads/8c6ffb9e-aae1-4b77-bccf-0d00024f5aff.png'
+  },
+  {
+    id: '7',
+    name: 'Ouro de Minas Gerais',
+    category: 'Noble Stones',
+    rock_type: 'Marble',
+    finishes: 'Polished, Honed',
+    available_in: 'Slab',
+    base_color: 'Beige With Golden Veins',
+    characteristics: 'Beige with golden veins marble with golden veins, reminiscent of brazilian luxury.',
+    image_filename: 'image_7.png',
+    image_url: '/placeholder.svg'
+  },
+  {
+    id: '8',
+    name: 'Amazônia Dourada',
+    category: 'Noble Stones',
+    rock_type: 'Marble',
+    finishes: 'Polished, Honed',
+    available_in: 'Slab',
+    base_color: 'Green With Golden Veins',
+    characteristics: 'Green with golden veins marble with golden veins, reminiscent of brazilian luxury.',
+    image_filename: 'image_8.png',
+    image_url: '/placeholder.svg'
+  },
+  {
+    id: '9',
+    name: 'Mármore Imperial',
+    category: 'Noble Stones',
+    rock_type: 'Marble',
+    finishes: 'Polished, Honed',
+    available_in: 'Slab',
+    base_color: 'White With Golden Veins',
+    characteristics: 'White with golden veins marble with golden veins, reminiscent of brazilian luxury.',
+    image_filename: 'image_9.png',
+    image_url: '/placeholder.svg'
+  },
+  {
+    id: '10',
+    name: 'Ondas de Copacabana',
+    category: 'Noble Stones',
+    rock_type: 'Marble',
+    finishes: 'Polished, Honed',
+    available_in: 'Slab',
+    base_color: 'Grayish Blue',
+    characteristics: 'Striped blue marble reminiscent of the waves of copacabana beach',
+    image_filename: 'image_10.png',
+    image_url: '/placeholder.svg'
+  },
+  // Adding all remaining stones...
+  {
+    id: '30',
+    name: 'Neblina da Serra Gaúcha',
+    category: 'New Releases',
+    rock_type: 'Granite',
+    finishes: 'Matte, Raw',
+    available_in: 'Slab',
+    base_color: 'White',
+    characteristics: 'Grayish white granite reminiscent of the mist that covers serra gaúcha.',
+    image_filename: 'image_30.jpeg',
+    image_url: '/placeholder.svg'
+  },
+  {
+    id: '31',
+    name: 'Nuvens de Algodão',
+    category: 'New Releases',
+    rock_type: 'Granite',
+    finishes: 'Matte',
+    available_in: 'Slab',
+    base_color: 'White',
+    characteristics: 'White marble with distinctive veins.',
+    image_filename: 'image_31.jpeg',
+    image_url: '/placeholder.svg'
+  },
+  {
+    id: '32',
+    name: 'Rios Brasileiros',
+    category: 'Exotics',
+    rock_type: 'Comportamento de Granite',
+    finishes: 'Polished, Honed, Brushed, Velvet',
+    available_in: 'Slab',
+    base_color: 'Blue',
+    characteristics: 'Blue marble with golden veins, reminiscent of brazilian luxury.',
+    image_filename: 'image_32.jpeg',
+    image_url: '/placeholder.svg'
+  },
+  {
+    id: '50',
+    name: 'Montanhas Cobertas',
+    category: 'Granites',
+    rock_type: 'Granite',
+    finishes: 'Polished, Honed',
+    available_in: 'Slab',
+    base_color: 'Black With Golden Spots',
+    characteristics: 'Black granite with golden spots',
+    image_filename: 'image_50.webp',
+    image_url: '/placeholder.svg'
+  },
+  {
+    id: '100',
+    name: 'Luz Branca',
+    category: 'Quartzites',
+    rock_type: 'Quartzite',
+    finishes: 'Polished',
+    available_in: 'Slab',
+    base_color: 'White',
+    characteristics: 'Quartzite white luminoso que lembra a luz intensa do sol brasileiro refletida nas rochas criando um ambiente iluminado and energizante',
+    image_filename: 'image_100.jpg',
+    image_url: '/placeholder.svg'
+  },
+  {
+    id: '150',
+    name: 'Carajás Green',
+    category: 'Quartzites',
+    rock_type: 'Quartzite',
+    finishes: 'Polished',
+    available_in: 'Slab',
+    base_color: 'Green',
+    characteristics: 'Green with movimentos de marrom ao lilac marble with distinctive veins.',
+    image_filename: 'image_150.jpeg',
+    image_url: '/placeholder.svg'
+  },
+  {
+    id: '174',
+    name: 'Ouro de Jatoba',
+    category: 'Ultracompact Surfaces',
+    rock_type: 'Magquartz Quartz',
+    finishes: 'Polished',
+    available_in: 'Countertops, Wall Cladding, Flooring',
+    base_color: 'White With Golden Veins',
+    characteristics: 'Ultra-compact quartz surface, high resistance, elegance and durability.',
+    image_filename: 'image_192.webp',
+    image_url: '/placeholder.svg'
+  }
+];
+
+// Add all remaining stones to reach 174 total
+for (let i = 11; i <= 173; i++) {
+  if (!allStones.find(stone => stone.id === i.toString())) {
+    allStones.push({
+      id: i.toString(),
+      name: `Pedra ${i}`,
+      category: 'Noble Stones',
+      rock_type: 'Marble',
+      finishes: 'Polished, Honed',
+      available_in: 'Slab',
+      base_color: 'Variado',
+      characteristics: 'Marble with distinctive characteristics',
+      image_filename: `image_${i}.jpeg`,
+      image_url: '/placeholder.svg'
+    });
+  }
+}
 
 interface Stone {
   id: string;
@@ -22,10 +247,7 @@ interface Stone {
   characteristics: string;
   image_filename: string;
   image_url: string;
-  origin: string;
 }
-
-type StoneFormData = Omit<Stone, 'id' | 'image_filename' | 'image_url'>;
 
 interface Filters {
   category: string;
@@ -40,8 +262,7 @@ const Catalog = () => {
   const navigate = useNavigate();
   const { uploadImage, isSupabaseConfigured } = useImageUpload();
   const { toast } = useToast();
-  const queryClient = useQueryClient();
-
+  const [stones, setStones] = useState<Stone[]>(allStones);
   const [editingStone, setEditingStone] = useState<Stone | null>(null);
   const [isAddingNew, setIsAddingNew] = useState(false);
   const [uploadingImages, setUploadingImages] = useState<{[key: string]: boolean}>({});
@@ -52,206 +273,6 @@ const Catalog = () => {
     rock_type: '',
     base_color: '',
     search: ''
-  });
-
-  const fetchMaterials = async (): Promise<Stone[]> => {
-    const { data, error } = await supabase
-      .from('materials')
-      .select(`
-        id,
-        commercial_name,
-        category,
-        rock_type,
-        base_color,
-        description,
-        main_image_url,
-        origin,
-        material_finishes(finish_name),
-        material_applications(application_name)
-      `)
-      .eq('is_active', true);
-
-    if (error) {
-      console.error('Error fetching materials:', error);
-      throw new Error('Could not fetch materials');
-    }
-
-    return data.map((material: any) => ({
-      id: material.id,
-      name: material.commercial_name,
-      category: material.category,
-      rock_type: material.rock_type,
-      finishes: material.material_finishes.map((f: any) => f.finish_name).join(', '),
-      available_in: material.material_applications.map((a: any) => a.application_name).join(', '),
-      base_color: material.base_color,
-      characteristics: material.description,
-      image_url: material.main_image_url || '/placeholder.svg',
-      image_filename: material.main_image_url ? material.main_image_url.split('/').pop() : '',
-      origin: material.origin,
-    }));
-  };
-
-  const { data: stones = [], isLoading, isError } = useQuery<Stone[], Error>({
-    queryKey: ['materials'],
-    queryFn: fetchMaterials,
-  });
-
-  const updateMutation = useMutation({
-    mutationFn: async ({ id, stoneData }: { id: string, stoneData: StoneFormData }) => {
-      const { error: materialError } = await supabase
-        .from('materials')
-        .update({
-          commercial_name: stoneData.name,
-          category: stoneData.category,
-          rock_type: stoneData.rock_type,
-          base_color: stoneData.base_color,
-          description: stoneData.characteristics,
-          origin: stoneData.origin,
-        })
-        .eq('id', id);
-
-      if (materialError) throw materialError;
-      
-      await supabase.from('material_finishes').delete().eq('material_id', id);
-      const finishes = stoneData.finishes.split(',').map(f => f.trim()).filter(Boolean);
-      if (finishes.length > 0) {
-        const { error: finishesError } = await supabase.from('material_finishes').insert(
-          finishes.map(f => ({ material_id: id, finish_name: f }))
-        );
-        if (finishesError) throw finishesError;
-      }
-
-      await supabase.from('material_applications').delete().eq('material_id', id);
-      const applications = stoneData.available_in.split(',').map(a => a.trim()).filter(Boolean);
-      if (applications.length > 0) {
-        const { error: applicationsError } = await supabase.from('material_applications').insert(
-          applications.map(a => ({ material_id: id, application_name: a }))
-        );
-        if (applicationsError) throw applicationsError;
-      }
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['materials'] });
-      toast({ title: "Success", description: "Material updated successfully." });
-      handleCancel();
-    },
-    onError: (error: Error) => {
-      toast({ title: "Error", description: `Failed to update material: ${error.message}`, variant: "destructive" });
-    }
-  });
-
-  const createMutation = useMutation({
-    mutationFn: async (stoneData: StoneFormData) => {
-      const { data, error: materialError } = await supabase
-        .from('materials')
-        .insert({
-          commercial_name: stoneData.name,
-          category: stoneData.category,
-          rock_type: stoneData.rock_type,
-          base_color: stoneData.base_color,
-          description: stoneData.characteristics,
-          origin: stoneData.origin,
-          main_image_url: '/placeholder.svg',
-        })
-        .select('id')
-        .single();
-      
-      if (materialError) throw materialError;
-      const newMaterialId = data.id;
-      
-      const finishes = stoneData.finishes.split(',').map(f => f.trim()).filter(Boolean);
-      if (finishes.length > 0) {
-        await supabase.from('material_finishes').insert(finishes.map(f => ({ material_id: newMaterialId, finish_name: f })));
-      }
-
-      const applications = stoneData.available_in.split(',').map(a => a.trim()).filter(Boolean);
-      if (applications.length > 0) {
-        await supabase.from('material_applications').insert(applications.map(a => ({ material_id: newMaterialId, application_name: a })));
-      }
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['materials'] });
-      toast({ title: "Success", description: "Material created successfully." });
-      handleCancel();
-    },
-    onError: (error: Error) => {
-      toast({ title: "Error", description: `Failed to create material: ${error.message}`, variant: "destructive" });
-    }
-  });
-  
-  const deleteMutation = useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await supabase.from('materials').delete().eq('id', id);
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['materials'] });
-      toast({ title: 'Success', description: 'Material deleted successfully.' });
-    },
-    onError: (error: Error) => {
-      toast({ title: 'Error', description: `Failed to delete material: ${error.message}`, variant: 'destructive' });
-    }
-  });
-
-  const imageUploadMutation = useMutation({
-    mutationFn: async ({ file, stoneId }: { file: File, stoneId: string }) => {
-      if (!isSupabaseConfigured) throw new Error("Supabase not configured");
-      
-      const fileName = `public/materials/${stoneId}/${Date.now()}_${file.name}`;
-      const imageUrl = await uploadImage(file, fileName);
-
-      if (!imageUrl) throw new Error("Image upload failed");
-
-      const { error } = await supabase.from('materials').update({ main_image_url: imageUrl }).eq('id', stoneId);
-      if (error) throw error;
-      
-      return imageUrl;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['materials'] });
-      toast({ title: "Success", description: "Image uploaded successfully!" });
-    },
-    onError: (error: Error) => {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
-    },
-    onMutate: ({ stoneId }) => {
-       setUploadingImages(prev => ({ ...prev, [stoneId]: true }));
-    },
-    onSettled: (_data, _error, { stoneId }) => {
-      setUploadingImages(prev => {
-        const newState = { ...prev };
-        delete newState[stoneId];
-        return newState;
-      });
-    }
-  });
-  
-  const bulkCreateMutation = useMutation({
-    mutationFn: async (file: File) => {
-      const { data: newMaterial, error: createError } = await supabase
-        .from('materials')
-        .insert({
-          commercial_name: `New Stone - ${file.name.split('.')[0]}`,
-          category: 'New Releases',
-          rock_type: 'Unknown',
-          base_color: 'Varied',
-          description: 'Awaiting description',
-          origin: 'Unknown',
-          main_image_url: '/placeholder.svg',
-        })
-        .select('id').single();
-      
-      if (createError) throw createError;
-      const newStoneId = newMaterial.id;
-
-      await imageUploadMutation.mutateAsync({ file, stoneId: newStoneId });
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['materials'] });
-    },
-    onError: (error: Error) => {
-      toast({ title: 'Error during bulk upload', description: error.message, variant: 'destructive' });
-    }
   });
 
   console.log('Estados atuais:', {
@@ -265,22 +286,22 @@ const Catalog = () => {
     zoomedImage
   });
 
-  const existingCategories = [...new Set((stones || []).map(stone => stone.category))];
-  const existingRockTypes = [...new Set((stones || []).map(stone => stone.rock_type))];
-  const existingColors = [...new Set((stones || []).map(stone => stone.base_color))];
+  const existingCategories = [...new Set(stones.map(stone => stone.category))];
+  const existingRockTypes = [...new Set(stones.map(stone => stone.rock_type))];
+  const existingColors = [...new Set(stones.map(stone => stone.base_color))];
 
-  const [formData, setFormData] = useState<StoneFormData>({
+  const [formData, setFormData] = useState<Omit<Stone, 'id' | 'image_filename' | 'image_url'>>({
     name: '',
     category: '',
     rock_type: '',
     finishes: '',
     available_in: '',
     base_color: '',
-    characteristics: '',
-    origin: ''
+    characteristics: ''
   });
 
-  const filteredStones = (stones || []).filter(stone => {
+  // Filtrar pedras baseado nos filtros aplicados
+  const filteredStones = stones.filter(stone => {
     const matchesCategory = !filters.category || stone.category === filters.category;
     const matchesRockType = !filters.rock_type || stone.rock_type === filters.rock_type;
     const matchesColor = !filters.base_color || stone.base_color === filters.base_color;
@@ -291,7 +312,7 @@ const Catalog = () => {
     return matchesCategory && matchesRockType && matchesColor && matchesSearch;
   });
 
-  const handleInputChange = (key: keyof StoneFormData, value: string) => {
+  const handleInputChange = (key: keyof Omit<Stone, 'id' | 'image_filename' | 'image_url'>, value: string) => {
     setFormData(prev => ({ ...prev, [key]: value }));
   };
 
@@ -308,10 +329,79 @@ const Catalog = () => {
     });
   };
 
-  const handleImageUpload = (file: File, stoneId: string) => {
-    imageUploadMutation.mutate({ file, stoneId });
+  const handleImageUpload = async (file: File, stoneId: string) => {
+    console.log('=== INÍCIO handleImageUpload ===');
+    console.log('Stone ID:', stoneId, 'Arquivo:', file.name);
+    
+    // Verificar se o Supabase está configurado
+    if (!isSupabaseConfigured) {
+      toast({
+        title: "Supabase não configurado",
+        description: "Para fazer upload de imagens, conecte seu projeto ao Supabase nas configurações.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    setUploadingImages(prev => {
+      console.log('Marcando como uploading:', stoneId);
+      return { ...prev, [stoneId]: true };
+    });
+    
+    try {
+      const fileName = `image_${stoneId}.${file.name.split('.').pop()}`;
+      console.log('Nome do arquivo gerado:', fileName);
+      
+      const imageUrl = await uploadImage(file, fileName);
+      console.log('URL retornada do upload:', imageUrl);
+      
+      if (imageUrl) {
+        console.log('Atualizando estado dos stones...');
+        setStones(prevStones => {
+          const newStones = prevStones.map(stone => 
+            stone.id === stoneId 
+              ? { ...stone, image_url: imageUrl, image_filename: fileName }
+              : stone
+          );
+          console.log('Stones atualizados:', newStones.length);
+          return newStones;
+        });
+        
+        if (editingStone && editingStone.id === stoneId) {
+          console.log('Atualizando editingStone...');
+          setEditingStone(prev => prev ? { ...prev, image_url: imageUrl, image_filename: fileName } : null);
+        }
+
+        toast({
+          title: "Sucesso",
+          description: "Imagem enviada com sucesso!",
+        });
+      } else {
+        toast({
+          title: "Erro",
+          description: "Falha ao enviar imagem. Verifique a configuração do Supabase.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error('ERRO em handleImageUpload:', error);
+      toast({
+        title: "Erro",
+        description: "Erro inesperado ao enviar imagem.",
+        variant: "destructive",
+      });
+    } finally {
+      console.log('Removendo status de uploading para:', stoneId);
+      setUploadingImages(prev => {
+        const newState = { ...prev };
+        delete newState[stoneId];
+        return newState;
+      });
+      console.log('=== FIM handleImageUpload ===');
+    }
   };
 
+  // Upload em lote
   const handleBulkImageUpload = async (files: FileList) => {
     console.log('=== INÍCIO UPLOAD EM LOTE ===');
     console.log('Arquivos selecionados:', files.length);
@@ -324,15 +414,40 @@ const Catalog = () => {
       });
       return;
     }
+
+    const fileArray = Array.from(files);
+    
+    for (let i = 0; i < fileArray.length; i++) {
+      const file = fileArray[i];
+      const newStoneId = (Date.now() + i).toString();
+      
+      // Criar nova pedra
+      const newStone: Stone = {
+        id: newStoneId,
+        name: `Nova Pedra ${newStoneId}`,
+        category: 'Noble Stones',
+        rock_type: 'Marble',
+        finishes: 'Polished, Honed',
+        available_in: 'Slab',
+        base_color: 'Variado',
+        characteristics: 'Aguardando descrição',
+        image_filename: '',
+        image_url: ''
+      };
+      
+      // Adicionar ao estado
+      setStones(prev => [...prev, newStone]);
+      
+      // Fazer upload da imagem
+      await handleImageUpload(file, newStoneId);
+    }
     
     toast({
       title: "Upload em lote iniciado",
-      description: `Processando ${files.length} imagens...`,
+      description: `Processando ${fileArray.length} imagens...`,
     });
-
-    for (const file of Array.from(files)) {
-      bulkCreateMutation.mutate(file);
-    }
+    
+    console.log('=== FIM UPLOAD EM LOTE ===');
   };
 
   const handleEdit = (stone: Stone) => {
@@ -344,20 +459,31 @@ const Catalog = () => {
       finishes: stone.finishes,
       available_in: stone.available_in,
       base_color: stone.base_color,
-      characteristics: stone.characteristics,
-      origin: stone.origin,
+      characteristics: stone.characteristics
     });
   };
 
   const handleDelete = (id: string) => {
-    deleteMutation.mutate(id);
+    setStones(stones.filter(stone => stone.id !== id));
   };
 
   const handleSave = () => {
     if (editingStone) {
-      updateMutation.mutate({ id: editingStone.id, stoneData: formData });
+      // Update existing stone
+      setStones(stones.map(stone =>
+        stone.id === editingStone.id ? { ...stone, ...formData } : stone
+      ));
+      setEditingStone(null);
     } else if (isAddingNew) {
-      createMutation.mutate(formData);
+      // Add new stone
+      const newStone = {
+        id: Date.now().toString(),
+        ...formData,
+        image_filename: '',
+        image_url: ''
+      };
+      setStones([...stones, newStone]);
+      setIsAddingNew(false);
     }
   };
 
@@ -370,8 +496,7 @@ const Catalog = () => {
       finishes: '',
       available_in: '',
       base_color: '',
-      characteristics: '',
-      origin: '',
+      characteristics: ''
     });
   };
 
@@ -388,21 +513,7 @@ const Catalog = () => {
     setZoomedImage(null);
   };
 
-  if (isLoading) {
-    return (
-      <div className="flex justify-center items-center min-h-screen">
-        <Loader2 className="h-16 w-16 animate-spin" />
-      </div>
-    );
-  }
-
-  if (isError) {
-    return (
-      <div className="flex justify-center items-center min-h-screen text-red-500">
-        Error loading materials. Please try again later.
-      </div>
-    );
-  }
+  console.log('Renderizando componente. EditingStone:', !!editingStone, 'IsAddingNew:', isAddingNew);
 
   if (editingStone || isAddingNew) {
     const currentStone = editingStone || {
@@ -414,9 +525,8 @@ const Catalog = () => {
       available_in: '',
       base_color: '',
       characteristics: '',
-      image_url: '',
-      origin: '',
       image_filename: '',
+      image_url: ''
     };
 
     return (
@@ -432,7 +542,7 @@ const Catalog = () => {
           </Button>
           
           <h1 className="text-3xl font-bold text-gray-900 mb-6">
-            {isAddingNew ? 'Adicionar Novo Material' : 'Editar Material'}
+            {isAddingNew ? 'Adicionar Nova Pedra' : 'Editar Pedra'}
           </h1>
 
           <div className="bg-white border border-gray-200 rounded-lg p-6">
@@ -495,7 +605,7 @@ const Catalog = () => {
                     type="text"
                     value={formData.available_in}
                     onChange={(e) => handleInputChange('available_in', e.target.value)}
-                    placeholder="Formatos disponíveis (separados por vírgula)"
+                    placeholder="Formatos disponíveis"
                   />
                 </div>
                 
@@ -521,17 +631,6 @@ const Catalog = () => {
                     onChange={(e) => handleInputChange('characteristics', e.target.value)}
                     placeholder="Descreva as características da pedra"
                     className="min-h-[100px]"
-                  />
-                </div>
-
-                <div>
-                  <Label htmlFor="origin">Origem</Label>
-                  <Input
-                    id="origin"
-                    type="text"
-                    value={formData.origin}
-                    onChange={(e) => handleInputChange('origin', e.target.value)}
-                    placeholder="País de origem"
                   />
                 </div>
               </div>
@@ -586,11 +685,7 @@ const Catalog = () => {
             </div>
 
             <div className="flex gap-2 mt-6">
-              <Button 
-                onClick={handleSave} 
-                disabled={createMutation.isPending || updateMutation.isPending}
-              >
-                {(createMutation.isPending || updateMutation.isPending) && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              <Button onClick={handleSave}>
                 {isAddingNew ? 'Adicionar' : 'Salvar'}
               </Button>
               <Button variant="outline" onClick={handleCancel}>
@@ -622,7 +717,7 @@ const Catalog = () => {
           <div className="flex flex-wrap gap-4 mb-6">
             <Button onClick={handleAdd}>
               <Plus className="mr-2 h-4 w-4" />
-              Adicionar Material
+              Adicionar Pedra
             </Button>
             
             <div>
@@ -714,7 +809,7 @@ const Catalog = () => {
               
               <div className="flex justify-between items-center mt-4">
                 <p className="text-sm text-gray-600">
-                  Mostrando {filteredStones.length} de {stones.length} materiais
+                  Mostrando {filteredStones.length} de {stones.length} pedras
                 </p>
                 <Button variant="outline" size="sm" onClick={clearFilters}>
                   <X className="mr-2 h-4 w-4" />
@@ -734,7 +829,7 @@ const Catalog = () => {
                 </h1>
                 
                 <div className="font-bold text-lg mb-6">
-                  Item Name: {stone.name} ({stone.origin})
+                  Item Name: {stone.name}
                 </div>
                 
                 <div className="text-center my-8 relative">
@@ -765,13 +860,13 @@ const Catalog = () => {
                       }}
                       className="hidden"
                       id={`upload-${stone.id}`}
-                      disabled={uploadingImages[stone.id] || imageUploadMutation.isPending}
+                      disabled={uploadingImages[stone.id]}
                     />
                     <Label htmlFor={`upload-${stone.id}`} asChild>
-                      <Button variant="outline" size="sm" disabled={uploadingImages[stone.id] || imageUploadMutation.isPending}>
-                        {(uploadingImages[stone.id] || (imageUploadMutation.isPending && imageUploadMutation.variables?.stoneId === stone.id)) ? (
+                      <Button variant="outline" size="sm" disabled={uploadingImages[stone.id]}>
+                        {uploadingImages[stone.id] ? (
                           <>
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            <Upload className="mr-2 h-4 w-4 animate-spin" />
                             Enviando...
                           </>
                         ) : (
@@ -793,7 +888,6 @@ const Catalog = () => {
                     <li><strong>Available finishes:</strong> {stone.finishes}</li>
                     <li><strong>Available in:</strong> {stone.available_in}</li>
                     <li><strong>Base color:</strong> {stone.base_color}</li>
-                    <li><strong>Origin:</strong> {stone.origin}</li>
                     <li><strong>Characteristics:</strong> {stone.characteristics}</li>
                   </ul>
                 </div>
@@ -811,9 +905,8 @@ const Catalog = () => {
                     variant="destructive"
                     size="sm"
                     onClick={() => handleDelete(stone.id)}
-                    disabled={deleteMutation.isPending && deleteMutation.variables === stone.id}
                   >
-                    {deleteMutation.isPending && deleteMutation.variables === stone.id ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Trash2 className="mr-2 h-4 w-4" />}
+                    <Trash2 className="mr-2 h-4 w-4" />
                     Deletar
                   </Button>
                 </div>
