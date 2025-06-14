@@ -11,8 +11,11 @@ let supabase: any = null;
 
 if (isSupabaseConfigured) {
   supabase = createClient(supabaseUrl, supabaseAnonKey);
+  console.log('Supabase configurado com sucesso!');
 } else {
-  console.warn('Supabase não configurado. Variáveis VITE_SUPABASE_URL e VITE_SUPABASE_ANON_KEY não foram encontradas.');
+  console.warn('Supabase não configurado. Verificando variáveis de ambiente...');
+  console.log('VITE_SUPABASE_URL:', supabaseUrl ? 'Definida' : 'Não definida');
+  console.log('VITE_SUPABASE_ANON_KEY:', supabaseAnonKey ? 'Definida' : 'Não definida');
 }
 
 export const useImageUpload = () => {
@@ -25,8 +28,33 @@ export const useImageUpload = () => {
       // Verificar se o Supabase está configurado
       if (!isSupabaseConfigured || !supabase) {
         console.error('ERRO: Supabase não configurado');
-        console.error('Certifique-se de que as variáveis VITE_SUPABASE_URL e VITE_SUPABASE_ANON_KEY estão definidas');
+        console.error('URL:', supabaseUrl);
+        console.error('Key disponível:', !!supabaseAnonKey);
         return null;
+      }
+      
+      // Verificar se o bucket existe, se não existir, criar
+      console.log('Verificando bucket stone-images...');
+      const { data: buckets, error: bucketsError } = await supabase.storage.listBuckets();
+      
+      if (bucketsError) {
+        console.error('Erro ao listar buckets:', bucketsError);
+        return null;
+      }
+      
+      const bucketExists = buckets?.some((bucket: any) => bucket.name === 'stone-images');
+      
+      if (!bucketExists) {
+        console.log('Bucket não existe, criando...');
+        const { error: createError } = await supabase.storage.createBucket('stone-images', {
+          public: true
+        });
+        
+        if (createError) {
+          console.error('Erro ao criar bucket:', createError);
+          return null;
+        }
+        console.log('Bucket criado com sucesso!');
       }
       
       // Upload to Supabase Storage
