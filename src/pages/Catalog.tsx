@@ -102,7 +102,7 @@ const Catalog = () => {
   console.log('=== RENDERIZANDO CATALOG ===');
   
   const navigate = useNavigate();
-  const { uploadImage } = useImageUpload();
+  const { uploadImage, isSupabaseConfigured } = useImageUpload();
   const { toast } = useToast();
   const [stones, setStones] = useState<Stone[]>(exampleStones);
   const [editingStone, setEditingStone] = useState<Stone | null>(null);
@@ -113,7 +113,8 @@ const Catalog = () => {
     stonesCount: stones.length,
     editingStone: editingStone?.id,
     isAddingNew,
-    uploadingImagesKeys: Object.keys(uploadingImages)
+    uploadingImagesKeys: Object.keys(uploadingImages),
+    isSupabaseConfigured
   });
 
   const existingCategories = [...new Set(stones.map(stone => stone.category))];
@@ -137,6 +138,16 @@ const Catalog = () => {
   const handleImageUpload = async (file: File, stoneId: string) => {
     console.log('=== INÍCIO handleImageUpload ===');
     console.log('Stone ID:', stoneId, 'Arquivo:', file.name);
+    
+    // Verificar se o Supabase está configurado
+    if (!isSupabaseConfigured) {
+      toast({
+        title: "Supabase não configurado",
+        description: "Para fazer upload de imagens, conecte seu projeto ao Supabase nas configurações.",
+        variant: "destructive",
+      });
+      return;
+    }
     
     setUploadingImages(prev => {
       console.log('Marcando como uploading:', stoneId);
@@ -174,7 +185,7 @@ const Catalog = () => {
       } else {
         toast({
           title: "Erro",
-          description: "Falha ao enviar imagem. Tente novamente.",
+          description: "Falha ao enviar imagem. Verifique a configuração do Supabase.",
           variant: "destructive",
         });
       }
