@@ -218,8 +218,8 @@ const stonesWithImages = initialStones.map(stone => {
   return stone;
 });
 
-const IMAGE_WIDTH = 260; // 16:9 approx proporção (ajustado para visualizar melhor)
-const IMAGE_HEIGHT = Math.round(IMAGE_WIDTH / (16/9)); // 146px (16:9)
+const IMAGE_WIDTH = 340; // aumentado para destaque no card
+const IMAGE_HEIGHT = Math.round(IMAGE_WIDTH / (16/9)); // mantém proporção 16:9
 
 const Catalog = () => {
   const [stones, setStones] = useState<Stone[]>(stonesWithImages);
