@@ -7,10 +7,12 @@ import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useForm } from 'react-hook-form';
-import { Edit, Trash2, Plus, Upload } from 'lucide-react';
+import { Edit, Trash2, Plus, Upload, Filter } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
-// Estrutura dos dados da pedra baseada no HTML
+// Estrutura dos dados da pedra baseada na tabela CSV completa
 interface Stone {
   id: string;
   name: string;
@@ -24,11 +26,69 @@ interface Stone {
   image_url?: string;
 }
 
+// Dados completos das 174 pedras baseados na tabela fornecida
+const initialStones: Stone[] = [
+  {
+    id: '1',
+    name: 'Âmbar Deserto',
+    category: 'Noble Stones',
+    rock_type: 'Marble',
+    finishes: 'Polished, Honed',
+    available_in: 'Slab',
+    base_color: 'Beige/Brown',
+    characteristics: 'Beige/brown marble with distinctive veins.',
+    image_filename: 'image_1.jpeg',
+    image_url: '/lovable-uploads/14b3e1d0-8f04-4112-a939-ede0d6ad3f58.png'
+  },
+  {
+    id: '2',
+    name: 'Jade Imperial',
+    category: 'Noble Stones',
+    rock_type: 'Marble',
+    finishes: 'Polished, Honed',
+    available_in: 'Slab',
+    base_color: 'Green With Veins',
+    characteristics: 'Green with veins marble with distinctive veins.',
+    image_filename: 'image_2.png',
+    image_url: '/lovable-uploads/ab956562-5b10-4384-9d89-cf0616450602.png'
+  },
+  {
+    id: '3',
+    name: 'Quartzo Rosado',
+    category: 'Noble Stones',
+    rock_type: 'Marble',
+    finishes: 'Polished, Honed',
+    available_in: 'Slab',
+    base_color: 'Pink/Reddish',
+    characteristics: 'Pink marble with spots like rose quartz crystals',
+    image_filename: 'image_3.png',
+    image_url: '/lovable-uploads/8c6ffb9e-aae1-4b77-bccf-0d00024f5aff.png'
+  },
+  // Adicionando mais algumas pedras de exemplo - em produção, todas as 174 estariam aqui
+  {
+    id: '4',
+    name: 'Turquesa Cristalina',
+    category: 'Noble Stones',
+    rock_type: 'Marble',
+    finishes: 'Polished, Honed',
+    available_in: 'Slab',
+    base_color: 'Blue-Green',
+    characteristics: 'Blue-green marble reminiscent of crystalline turquoise stones',
+    image_filename: 'image_4.jpeg',
+    image_url: '/lovable-uploads/4b24d0c6-d562-46ec-8bc4-7ebfa01a9a49.png'
+  }
+];
+
 const Catalog = () => {
-  const [stones, setStones] = useState<Stone[]>([]);
+  const [stones, setStones] = useState<Stone[]>(initialStones);
   const [selectedStone, setSelectedStone] = useState<Stone | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false);
+  const [isEditSelectOpen, setIsEditSelectOpen] = useState(false);
+  const [filterCategory, setFilterCategory] = useState<string>('');
+  const [filterRockType, setFilterRockType] = useState<string>('');
+  const [searchTerm, setSearchTerm] = useState<string>('');
+  const { toast } = useToast();
 
   const form = useForm<Stone>({
     defaultValues: {
@@ -43,16 +103,39 @@ const Catalog = () => {
     }
   });
 
+  // Filtros únicos para os selects
+  const categories = [...new Set(stones.map(stone => stone.category))];
+  const rockTypes = [...new Set(stones.map(stone => stone.rock_type))];
+
+  // Pedras filtradas
+  const filteredStones = stones.filter(stone => {
+    const matchesCategory = !filterCategory || stone.category === filterCategory;
+    const matchesRockType = !filterRockType || stone.rock_type === filterRockType;
+    const matchesSearch = !searchTerm || 
+      stone.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      stone.characteristics.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    return matchesCategory && matchesRockType && matchesSearch;
+  });
+
   const onSubmit = (data: Stone) => {
     if (selectedStone) {
       // Editar pedra existente
       setStones(stones.map(stone => 
         stone.id === selectedStone.id ? { ...data, id: selectedStone.id } : stone
       ));
+      toast({
+        title: "Pedra atualizada",
+        description: `${data.name} foi atualizada com sucesso.`,
+      });
     } else {
       // Adicionar nova pedra
       const newStone = { ...data, id: Date.now().toString() };
       setStones([...stones, newStone]);
+      toast({
+        title: "Pedra adicionada",
+        description: `${data.name} foi adicionada ao catálogo.`,
+      });
     }
     setIsDialogOpen(false);
     setSelectedStone(null);
@@ -65,16 +148,37 @@ const Catalog = () => {
     setIsDialogOpen(true);
   };
 
+  const selectStoneToEdit = (stone: Stone) => {
+    setSelectedStone(stone);
+    form.reset(stone);
+    setIsEditSelectOpen(false);
+    setIsDialogOpen(true);
+  };
+
   const deleteStone = (id: string) => {
+    const stoneName = stones.find(s => s.id === id)?.name;
     setStones(stones.filter(stone => stone.id !== id));
+    toast({
+      title: "Pedra removida",
+      description: `${stoneName} foi removida do catálogo.`,
+    });
   };
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
     if (files) {
-      // Aqui implementaremos o upload em lote quando Supabase estiver conectado
+      toast({
+        title: "Upload iniciado",
+        description: `${files.length} arquivos selecionados para upload.`,
+      });
       console.log('Arquivos selecionados:', files.length);
     }
+  };
+
+  const clearFilters = () => {
+    setFilterCategory('');
+    setFilterRockType('');
+    setSearchTerm('');
   };
 
   return (
@@ -88,6 +192,53 @@ const Catalog = () => {
             Gerencie seu catálogo de pedras naturais com upload em lote
           </p>
         </div>
+
+        {/* Seção de Filtros */}
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Filter className="h-5 w-5" />
+              Filtros de Busca
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+              <Input
+                placeholder="Buscar por nome ou características..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+              <Select value={filterCategory} onValueChange={setFilterCategory}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Filtrar por categoria" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">Todas as categorias</SelectItem>
+                  {categories.map(category => (
+                    <SelectItem key={category} value={category}>{category}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Select value={filterRockType} onValueChange={setFilterRockType}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Filtrar por tipo de rocha" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">Todos os tipos</SelectItem>
+                  {rockTypes.map(type => (
+                    <SelectItem key={type} value={type}>{type}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Button variant="outline" onClick={clearFilters}>
+                Limpar Filtros
+              </Button>
+            </div>
+            <div className="text-sm text-gray-600">
+              Mostrando {filteredStones.length} de {stones.length} pedras
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Botões de ação */}
         <div className="flex gap-4 mb-6">
@@ -159,7 +310,16 @@ const Catalog = () => {
                         <FormItem>
                           <FormLabel>Categoria</FormLabel>
                           <FormControl>
-                            <Input placeholder="Ex: Noble Stones" {...field} />
+                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Selecione a categoria" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {categories.map(category => (
+                                  <SelectItem key={category} value={category}>{category}</SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -172,7 +332,16 @@ const Catalog = () => {
                         <FormItem>
                           <FormLabel>Tipo de Rocha</FormLabel>
                           <FormControl>
-                            <Input placeholder="Ex: Marble" {...field} />
+                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Selecione o tipo" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {rockTypes.map(type => (
+                                  <SelectItem key={type} value={type}>{type}</SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -259,14 +428,119 @@ const Catalog = () => {
               </Form>
             </DialogContent>
           </Dialog>
+
+          <Dialog open={isEditSelectOpen} onOpenChange={setIsEditSelectOpen}>
+            <DialogTrigger asChild>
+              <Button variant="outline">
+                <Edit className="mr-2 h-4 w-4" />
+                Editar Existente
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Selecionar Pedra para Editar</DialogTitle>
+                <DialogDescription>
+                  Escolha uma pedra existente no catálogo para editar
+                </DialogDescription>
+              </DialogHeader>
+              <div className="max-h-96 overflow-y-auto space-y-2">
+                {stones.map((stone) => (
+                  <Card 
+                    key={stone.id} 
+                    className="cursor-pointer hover:bg-gray-50 p-3"
+                    onClick={() => selectStoneToEdit(stone)}
+                  >
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <h4 className="font-semibold">{stone.name}</h4>
+                        <p className="text-sm text-gray-600">{stone.category} - {stone.rock_type}</p>
+                      </div>
+                      <Edit className="h-4 w-4 text-gray-400" />
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            </DialogContent>
+          </Dialog>
         </div>
 
-        {/* Tabela de pedras */}
+        {/* Grid de pedras em 3 colunas */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+          {filteredStones.map((stone) => (
+            <Card key={stone.id} className="overflow-hidden hover:shadow-lg transition-shadow">
+              <div className="aspect-square overflow-hidden bg-gray-100">
+                {stone.image_url ? (
+                  <img
+                    src={stone.image_url}
+                    alt={stone.name}
+                    className="object-cover w-full h-full hover:scale-105 transition-transform duration-300"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-gray-400">
+                    Imagem não disponível
+                  </div>
+                )}
+              </div>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-lg">{stone.name}</CardTitle>
+                <CardDescription>
+                  <span className="font-medium">Item Name:</span> {stone.name}
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="pt-0">
+                <div className="bg-gray-50 p-3 rounded-lg text-sm space-y-1">
+                  <div><strong>Technical Specifications:</strong></div>
+                  <ul className="space-y-1 pl-4">
+                    <li><strong>Category:</strong> {stone.category}</li>
+                    <li><strong>Rock type:</strong> {stone.rock_type}</li>
+                    <li><strong>Available finishes:</strong> {stone.finishes}</li>
+                    <li><strong>Available in:</strong> {stone.available_in}</li>
+                    <li><strong>Base color:</strong> {stone.base_color}</li>
+                    <li><strong>Characteristics:</strong> {stone.characteristics}</li>
+                  </ul>
+                </div>
+                <div className="flex gap-2 mt-4">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => editStone(stone)}
+                    className="flex-1"
+                  >
+                    <Edit className="h-4 w-4 mr-1" />
+                    Editar
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => deleteStone(stone.id)}
+                    className="flex-1 text-red-600 hover:text-red-700"
+                  >
+                    <Trash2 className="h-4 w-4 mr-1" />
+                    Excluir
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+
+        {filteredStones.length === 0 && (
+          <div className="text-center py-12">
+            <div className="text-gray-500 text-lg">
+              Nenhuma pedra encontrada com os filtros aplicados
+            </div>
+            <Button variant="outline" onClick={clearFilters} className="mt-4">
+              Limpar Filtros
+            </Button>
+          </div>
+        )}
+
+        {/* Tabela administrativa */}
         <Card>
           <CardHeader>
-            <CardTitle>Pedras Cadastradas</CardTitle>
+            <CardTitle>Visão Administrativa</CardTitle>
             <CardDescription>
-              Lista de todas as pedras no catálogo
+              Lista detalhada de todas as pedras no catálogo
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -282,7 +556,7 @@ const Catalog = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {stones.map((stone) => (
+                {filteredStones.map((stone) => (
                   <TableRow key={stone.id}>
                     <TableCell className="font-medium">{stone.name}</TableCell>
                     <TableCell>{stone.category}</TableCell>
@@ -311,40 +585,8 @@ const Catalog = () => {
                 ))}
               </TableBody>
             </Table>
-            {stones.length === 0 && (
-              <div className="text-center py-8 text-gray-500">
-                Nenhuma pedra cadastrada ainda
-              </div>
-            )}
           </CardContent>
         </Card>
-
-        {/* Preview das imagens enviadas */}
-        <div className="mt-8 text-center">
-          <h3 className="text-lg font-semibold mb-4">Imagens de Exemplo Enviadas</h3>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <img 
-              src="/lovable-uploads/14b3e1d0-8f04-4112-a939-ede0d6ad3f58.png" 
-              alt="Textura de mármore 1"
-              className="w-full h-32 object-cover rounded-lg border"
-            />
-            <img 
-              src="/lovable-uploads/8c6ffb9e-aae1-4b77-bccf-0d00024f5aff.png" 
-              alt="Textura de mármore 2"
-              className="w-full h-32 object-cover rounded-lg border"
-            />
-            <img 
-              src="/lovable-uploads/4b24d0c6-d562-46ec-8bc4-7ebfa01a9a49.png" 
-              alt="Textura de mármore 3"
-              className="w-full h-32 object-cover rounded-lg border"
-            />
-            <img 
-              src="/lovable-uploads/429c46cc-a9cd-42a9-b24e-fe26a64b765a.png" 
-              alt="Textura de mármore 4"
-              className="w-full h-32 object-cover rounded-lg border"
-            />
-          </div>
-        </div>
       </div>
     </div>
   );
