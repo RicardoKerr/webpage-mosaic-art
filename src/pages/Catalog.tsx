@@ -218,6 +218,9 @@ const stonesWithImages = initialStones.map(stone => {
   return stone;
 });
 
+const IMAGE_WIDTH = 260; // px (proporção aproximada da imagem enviada)
+const IMAGE_HEIGHT = Math.round(IMAGE_WIDTH / (16/9)); // 146px para 16:9
+
 const Catalog = () => {
   const [stones, setStones] = useState<Stone[]>(stonesWithImages);
   const [selectedStone, setSelectedStone] = useState<Stone | null>(null);
@@ -228,6 +231,7 @@ const Catalog = () => {
   const [filterRockType, setFilterRockType] = useState<string>('all');
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [zoomedImage, setZoomedImage] = useState<string | null>(null);
+  const [uploadLogs, setUploadLogs] = useState<string[]>([]); // log para UI
   const { toast } = useToast();
 
   const form = useForm<Stone>({
@@ -310,22 +314,45 @@ const Catalog = () => {
       const validFiles = Array.from(files).filter(file => 
         initialStones.some(stone => stone.image_filename === file.name)
       );
-      
+      const invalidFiles = Array.from(files).filter(file => 
+        !initialStones.some(stone => stone.image_filename === file.name)
+      );
+
+      let logs: string[] = [];
       if (validFiles.length > 0) {
+        logs.push(`${validFiles.length} imagem(ns) reconhecida(s).`);
+
+        // Simulando um upload local: cria URL e associa ao catálogo
+        validFiles.forEach(file => {
+          const url = URL.createObjectURL(file);
+          setStones(oldStones =>
+            oldStones.map(stone =>
+              stone.image_filename === file.name
+                ? { ...stone, image_url: url }
+                : stone
+            )
+          );
+          logs.push(`Arquivo "${file.name}" aplicado ao card correspondente.`);
+        });
         toast({
           title: "Upload realizado",
-          description: `${validFiles.length} imagens válidas foram processadas.`,
-        });
-        console.log('Arquivos válidos processados:', validFiles.length);
-        
-        // Aqui você implementaria a lógica real de upload
-        // Por enquanto, apenas simula a associação das imagens
-      } else {
-        toast({
-          title: "Nenhuma imagem válida",
-          description: "As imagens devem seguir o padrão da lista (image_1.jpeg, image_2.png, etc.)",
+          description: `${validFiles.length} imagens válidas foram atualizadas.`,
         });
       }
+      if (invalidFiles.length > 0) {
+        logs.push(`${invalidFiles.length} arquivo(s) ignorado(s): ${invalidFiles.map(f=>`"${f.name}"`).join(', ')}`);
+        toast({
+          title: "Imagens ignoradas",
+          description: "Algumas imagens não correspondem ao padrão ou nome esperado (não aparecerão).",
+        });
+      }
+      if (!validFiles.length && !invalidFiles.length) {
+        logs.push("Nenhum arquivo processado.");
+      }
+
+      setUploadLogs(logs);
+      // Limpa o input para permitir reenvio do mesmo arquivo se quiser
+      event.target.value = '';
     }
   };
 
@@ -618,20 +645,33 @@ const Catalog = () => {
           </Dialog>
         </div>
 
+        {/* LOG DE UPLOAD */}
+        {uploadLogs.length > 0 && (
+          <div className="my-2">
+            <div className="bg-yellow-50 text-yellow-900 p-2 rounded text-xs space-y-1 border border-yellow-200">
+              {uploadLogs.map((log, i) => <div key={i}>{log}</div>)}
+            </div>
+          </div>
+        )}
+
         {/* Grid de pedras com imagem 200x100px */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
           {filteredStones.map((stone) => (
             <Card key={stone.id} className="overflow-hidden hover:shadow-lg transition-shadow">
-              <div className="w-full h-[100px] overflow-hidden bg-gray-100 relative">
+              <div
+                className={`w-full flex items-center justify-center bg-gray-100 relative`}
+                style={{ width: `${IMAGE_WIDTH}px`, height: `${IMAGE_HEIGHT}px`, margin: '0 auto' }}
+              >
                 {stone.image_url ? (
                   <img
                     src={stone.image_url}
                     alt={stone.name}
                     className="w-full h-full object-cover cursor-pointer hover:scale-105 transition-transform duration-300"
+                    style={{ width: `${IMAGE_WIDTH}px`, height: `${IMAGE_HEIGHT}px` }}
                     onClick={() => setZoomedImage(stone.image_url!)}
                   />
                 ) : (
-                  <div className="w-full h-full flex flex-col items-center justify-center text-gray-400 p-4">
+                  <div className="w-full h-full flex flex-col items-center justify-center text-gray-400 p-4 select-none" style={{fontSize: '13px'}}>
                     <ImageOff className="h-8 w-8 mb-1" />
                     <div className="text-center">
                       <div className="font-medium text-xs">Falta imagem</div>
@@ -688,7 +728,7 @@ const Catalog = () => {
 
         {/* Dialog para zoom da imagem */}
         <Dialog open={!!zoomedImage} onOpenChange={() => setZoomedImage(null)}>
-          <DialogContent className="max-w-4xl w-full h-[80vh] flex flex-col">
+          <DialogContent className="w-[70vw] h-[70vh] max-w-none max-h-none flex flex-col">
             <DialogHeader>
               <div className="flex justify-between items-center">
                 <DialogTitle>Visualização da Imagem</DialogTitle>
@@ -701,12 +741,13 @@ const Catalog = () => {
                 </Button>
               </div>
             </DialogHeader>
-            <div className="flex-1 flex items-center justify-center bg-black/5 rounded-lg overflow-hidden">
+            <div className="flex-1 flex items-center justify-center bg-black/5 rounded-lg overflow-hidden h-full">
               {zoomedImage && (
                 <img
                   src={zoomedImage}
                   alt="Zoom da pedra"
-                  className="max-w-full max-h-full object-contain"
+                  className="object-contain"
+                  style={{ maxWidth: '100%', maxHeight: '100%' }}
                 />
               )}
             </div>
