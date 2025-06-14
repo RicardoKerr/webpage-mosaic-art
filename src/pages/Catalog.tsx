@@ -8,7 +8,7 @@ import { ArrowLeft, Edit, Trash2, Plus, Upload, Filter, X, ZoomIn, ZoomOut, Sear
 import { useNavigate } from 'react-router-dom';
 import { useImageUpload } from '@/hooks/useImageUpload';
 import { useToast } from '@/hooks/use-toast';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -38,6 +38,7 @@ const Catalog = () => {
   const navigate = useNavigate();
   const { uploadImage, getImageUrl, isSupabaseConfigured } = useImageUpload();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   const { data: fetchedStones, isLoading, isError } = useQuery<Stone[]>({
     queryKey: ['stones'],
@@ -115,6 +116,87 @@ const Catalog = () => {
     characteristics: ''
   });
 
+  // == MUTATIONS ==
+  const createStoneMutation = useMutation({
+    mutationFn: async (newStoneData: Omit<Stone, 'id' | 'image_filename' | 'image_url'>) => {
+      const dbData = {
+        'Nome': newStoneData.name,
+        'Categoria': newStoneData.category,
+        'Tipo de Rocha': newStoneData.rock_type,
+        'Acabamentos Disponíveis': newStoneData.finishes,
+        'Disponível em': newStoneData.available_in,
+        'Cor Base': newStoneData.base_color,
+        'Características': newStoneData.characteristics,
+      };
+      const { error } = await supabase.from('aralogo_simples').insert(dbData).select();
+      if (error) throw new Error(error.message);
+    },
+    onSuccess: () => {
+      toast({ title: "Sucesso", description: "Nova pedra adicionada." });
+      queryClient.invalidateQueries({ queryKey: ['stones'] });
+      setIsAddingNew(false);
+    },
+    onError: (error: Error) => {
+      toast({ title: "Erro", description: `Não foi possível adicionar a pedra: ${error.message}`, variant: "destructive" });
+    },
+  });
+
+  const updateStoneMutation = useMutation({
+    mutationFn: async (stoneToUpdate: Partial<Stone> & { id: string }) => {
+      const { id, ...data } = stoneToUpdate;
+      const dbData = {
+        'Nome': data.name,
+        'Categoria': data.category,
+        'Tipo de Rocha': data.rock_type,
+        'Acabamentos Disponíveis': data.finishes,
+        'Disponível em': data.available_in,
+        'Cor Base': data.base_color,
+        'Características': data.characteristics,
+      };
+      const { error } = await supabase.from('aralogo_simples').update(dbData).eq('id', id);
+      if (error) throw new Error(error.message);
+    },
+    onSuccess: () => {
+      toast({ title: "Sucesso", description: "Pedra atualizada." });
+      queryClient.invalidateQueries({ queryKey: ['stones'] });
+      setEditingStone(null);
+    },
+    onError: (error: Error) => {
+      toast({ title: "Erro", description: `Não foi possível atualizar a pedra: ${error.message}`, variant: "destructive" });
+    },
+  });
+
+  const deleteStoneMutation = useMutation({
+      mutationFn: async (stoneId: string) => {
+          const { error } = await supabase.from('aralogo_simples').delete().eq('id', stoneId);
+          if (error) { throw new Error(error.message); }
+      },
+      onSuccess: () => {
+          toast({ title: "Sucesso", description: "Pedra deletada." });
+          queryClient.invalidateQueries({ queryKey: ['stones'] });
+      },
+      onError: (error: Error) => {
+          toast({ title: "Erro", description: `Não foi possível deletar a pedra: ${error.message}`, variant: "destructive" });
+      }
+  });
+
+  const updateImageMutation = useMutation({
+    mutationFn: async ({ stoneId, fileName }: { stoneId: string, fileName: string }) => {
+        const { error } = await supabase
+            .from('aralogo_simples')
+            .update({ 'Imagem_Name_Site': fileName })
+            .eq('id', stoneId);
+        if (error) throw new Error(error.message);
+    },
+    onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ['stones'] });
+    },
+    onError: (error: Error) => {
+        toast({ title: "Erro", description: `Não foi possível salvar a referência da imagem: ${error.message}`, variant: "destructive" });
+    }
+  });
+
+
   // Filtrar pedras baseado nos filtros aplicados
   const filteredStones = stones.filter(stone => {
     const matchesCategory = !filters.category || filters.category === 'all' || stone.category === filters.category;
@@ -148,7 +230,6 @@ const Catalog = () => {
     console.log('=== INÍCIO handleImageUpload ===');
     console.log('Stone ID:', stoneId, 'Arquivo:', file.name);
     
-    // Verificar se o Supabase está configurado
     if (!isSupabaseConfigured) {
       toast({
         title: "Supabase não configurado",
@@ -164,27 +245,19 @@ const Catalog = () => {
     });
     
     try {
-      const fileName = `image_${stoneId}.${file.name.split('.').pop()}`;
+      const fileName = `image_${stoneId}_${Date.now()}.${file.name.split('.').pop()}`;
       console.log('Nome do arquivo gerado:', fileName);
       
       const imageUrl = await uploadImage(file, fileName);
       console.log('URL retornada do upload:', imageUrl);
       
       if (imageUrl) {
-        console.log('Atualizando estado dos stones...');
-        setStones(prevStones => {
-          const newStones = prevStones.map(stone => 
-            stone.id === stoneId 
-              ? { ...stone, image_url: imageUrl, image_filename: fileName }
-              : stone
-          );
-          console.log('Stones atualizados:', newStones.length);
-          return newStones;
-        });
+        console.log('Atualizando nome da imagem no banco de dados...');
+        updateImageMutation.mutate({ stoneId, fileName });
         
         if (editingStone && editingStone.id === stoneId) {
-          console.log('Atualizando editingStone...');
-          setEditingStone(prev => prev ? { ...prev, image_url: imageUrl, image_filename: fileName } : null);
+          console.log('Atualizando editingStone localmente para feedback imediato...');
+          setEditingStone(prev => prev ? { ...prev, image_filename: fileName } : null);
         }
 
         toast({
@@ -279,26 +352,19 @@ const Catalog = () => {
   };
 
   const handleDelete = (id: string) => {
-    setStones(stones.filter(stone => stone.id !== id));
+    if (window.confirm('Tem certeza de que deseja deletar esta pedra? Esta ação não pode ser desfeita.')) {
+      deleteStoneMutation.mutate(id);
+    }
   };
 
   const handleSave = () => {
+    const isSaving = createStoneMutation.isPending || updateStoneMutation.isPending;
+    if (isSaving) return;
+
     if (editingStone) {
-      // Update existing stone
-      setStones(stones.map(stone =>
-        stone.id === editingStone.id ? { ...stone, ...formData } : stone
-      ));
-      setEditingStone(null);
+      updateStoneMutation.mutate({ id: editingStone.id, ...formData });
     } else if (isAddingNew) {
-      // Add new stone
-      const newStone = {
-        id: Date.now().toString(),
-        ...formData,
-        image_filename: '',
-        image_url: ''
-      };
-      setStones([...stones, newStone]);
-      setIsAddingNew(false);
+      createStoneMutation.mutate(formData);
     }
   };
 
@@ -361,7 +427,7 @@ const Catalog = () => {
           </h1>
 
           <div className="bg-white border border-gray-200 rounded-lg p-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className={`grid grid-cols-1 ${!isAddingNew ? 'md:grid-cols-2' : ''} gap-6`}>
               <div className="space-y-4">
                 <div>
                   <Label htmlFor="name">Nome</Label>
@@ -449,56 +515,61 @@ const Catalog = () => {
                   />
                 </div>
               </div>
+              
+              {!isAddingNew && (
+                <div className="space-y-4">
+                  <div>
+                    <Label>Imagem Atual</Label>
+                    <div className="relative">
+                      <img 
+                        src={getImageUrl(editingStone?.image_filename || '')}
+                        alt={editingStone?.name || 'Nova Pedra'}
+                        className="w-full h-48 object-cover border border-gray-300 rounded-lg cursor-pointer"
+                        onClick={() => handleImageZoom(getImageUrl(editingStone?.image_filename || ''))}
+                      />
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="absolute top-2 right-2"
+                        onClick={() => handleImageZoom(getImageUrl(editingStone?.image_filename || ''))}
+                      >
+                        <ZoomIn className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
 
-              <div className="space-y-4">
-                <div>
-                  <Label>Imagem Atual</Label>
-                  <div className="relative">
-                    <img 
-                      src={getImageUrl(currentStone.image_filename)}
-                      alt={currentStone.name}
-                      className="w-full h-48 object-cover border border-gray-300 rounded-lg cursor-pointer"
-                      onClick={() => handleImageZoom(getImageUrl(currentStone.image_filename))}
-                    />
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="absolute top-2 right-2"
-                      onClick={() => handleImageZoom(getImageUrl(currentStone.image_filename))}
-                    >
-                      <ZoomIn className="h-4 w-4" />
-                    </Button>
+                  <div>
+                    <Label htmlFor="image_upload">Substituir Imagem</Label>
+                    <div className="flex items-center gap-2">
+                      <Input
+                        id="image_upload"
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file && editingStone) {
+                            handleImageUpload(file, editingStone.id);
+                          }
+                        }}
+                        disabled={uploadingImages[editingStone?.id || ''] || !editingStone}
+                      />
+                      {uploadingImages[editingStone?.id || ''] && (
+                        <Upload className="h-4 w-4 animate-spin" />
+                      )}
+                    </div>
+                    {editingStone &&
+                      <p className="text-sm text-gray-500 mt-1">
+                        A imagem será salva com um nome único no formato: image_{editingStone.id}_...
+                      </p>
+                    }
                   </div>
                 </div>
-
-                <div>
-                  <Label htmlFor="image_upload">Substituir Imagem</Label>
-                  <div className="flex items-center gap-2">
-                    <Input
-                      id="image_upload"
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (file) {
-                          handleImageUpload(file, currentStone.id);
-                        }
-                      }}
-                      disabled={uploadingImages[currentStone.id]}
-                    />
-                    {uploadingImages[currentStone.id] && (
-                      <Upload className="h-4 w-4 animate-spin" />
-                    )}
-                  </div>
-                  <p className="text-sm text-gray-500 mt-1">
-                    A imagem será salva como: image_{currentStone.id}
-                  </p>
-                </div>
-              </div>
+              )}
             </div>
 
             <div className="flex gap-2 mt-6">
-              <Button onClick={handleSave}>
+              <Button onClick={handleSave} disabled={createStoneMutation.isPending || updateStoneMutation.isPending}>
+                {(createStoneMutation.isPending || updateStoneMutation.isPending) && <Upload className="mr-2 h-4 w-4 animate-spin" />}
                 {isAddingNew ? 'Adicionar' : 'Salvar'}
               </Button>
               <Button variant="outline" onClick={handleCancel}>
@@ -611,8 +682,14 @@ const Catalog = () => {
                 }}
                 className="hidden"
                 id="bulk-upload"
+                disabled // Desativado por enquanto
               />
-              <Button variant="outline" onClick={() => document.getElementById('bulk-upload')?.click()}>
+              <Button 
+                variant="outline" 
+                onClick={() => document.getElementById('bulk-upload')?.click()}
+                disabled // Desativado por enquanto
+                title="Funcionalidade em desenvolvimento"
+              >
                 <Upload className="mr-2 h-4 w-4" />
                 Upload em Lote
               </Button>
