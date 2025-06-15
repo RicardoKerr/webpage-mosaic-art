@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Plus, LogOut } from 'lucide-react';
+import { Plus, LogOut, Shield, User } from 'lucide-react';
 import { useImageUpload } from '@/hooks/useImageUpload';
 import { useToast } from '@/hooks/use-toast';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -37,7 +37,7 @@ const Catalog = () => {
         const user = JSON.parse(userData);
         setCurrentUser(user);
       } else {
-        navigate('/user');
+        navigate('/auth');
       }
       setLoadingAuth(false);
     };
@@ -51,7 +51,7 @@ const Catalog = () => {
     toast({
       title: "Logout realizado com sucesso!",
     });
-    navigate('/user');
+    navigate('/auth');
   };
 
   const { data: fetchedStones, isLoading, isError, error } = useQuery<Stone[]>({
@@ -412,7 +412,7 @@ const Catalog = () => {
   }
 
   if (!currentUser) {
-    return null; // Will redirect to /user
+    return null; // Will redirect to /auth
   }
 
   if (editingStone || isAddingNew) {
@@ -442,9 +442,22 @@ const Catalog = () => {
         <div className="flex justify-between items-center mb-6">
           <CatalogHeader onAdd={handleAdd} />
           <div className="flex items-center gap-4">
-            <span className="text-sm text-gray-600">
-              Logado como: <strong>{currentUser.email}</strong>
-            </span>
+            <div className="flex items-center gap-2 text-sm">
+              {currentUser.is_admin ? (
+                <div className="flex items-center gap-1 px-3 py-1 bg-amber-100 text-amber-800 rounded-full">
+                  <Shield className="h-4 w-4" />
+                  <span className="font-medium">Administrador</span>
+                </div>
+              ) : (
+                <div className="flex items-center gap-1 px-3 py-1 bg-blue-100 text-blue-800 rounded-full">
+                  <User className="h-4 w-4" />
+                  <span className="font-medium">Usuário</span>
+                </div>
+              )}
+              <span className="text-gray-600">
+                <strong>{currentUser.email}</strong>
+              </span>
+            </div>
             <Button onClick={handleLogout} variant="outline">
               <LogOut className="mr-2 h-4 w-4" />
               Sair
