@@ -177,36 +177,19 @@ const Index = () => {
       {/* Footer */}
       <footer className="bg-gray-900 text-white">
         <div className="mx-auto max-w-7xl px-6 lg:px-8 py-12">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-            <div className="md:col-span-2">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div>
               <h3 className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
-                TechSolutions
+                Rakewells LTDA
               </h3>
               <p className="mt-4 text-gray-400 max-w-md">
                 Transforming ideas into innovative digital solutions. 
                 Your trusted partner in the technology world.
               </p>
             </div>
-            <div>
-              <h4 className="text-lg font-semibold mb-4">Services</h4>
-              <ul className="space-y-2 text-gray-400">
-                <li className="hover:text-white transition-colors cursor-pointer">Web Development</li>
-                <li className="hover:text-white transition-colors cursor-pointer">Mobile Apps</li>
-                <li className="hover:text-white transition-colors cursor-pointer">Digital Consulting</li>
-                <li className="hover:text-white transition-colors cursor-pointer">UX/UI Design</li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="text-lg font-semibold mb-4">Contact</h4>
-              <ul className="space-y-2 text-gray-400">
-                <li className="hover:text-white transition-colors cursor-pointer">contact@techsolutions.com</li>
-                <li className="hover:text-white transition-colors cursor-pointer">+55 11 9999-9999</li>
-                <li className="hover:text-white transition-colors cursor-pointer">São Paulo, SP</li>
-              </ul>
-            </div>
           </div>
           <div className="mt-8 pt-8 border-t border-gray-800 text-center text-gray-400">
-            <p>&copy; 2024 TechSolutions. All rights reserved.</p>
+            <p>&copy; 2024 Rakewells LTDA. All rights reserved.</p>
           </div>
         </div>
       </footer>
