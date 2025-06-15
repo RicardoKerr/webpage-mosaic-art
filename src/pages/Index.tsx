@@ -24,9 +24,6 @@ const Index = () => {
                   View Catalog
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
-                <Button variant="outline" size="lg" className="hover:bg-gray-50 transition-all duration-300" onClick={() => navigate('/auth')}>
-                  User Access
-                </Button>
               </div>
             </div>
             <div className="relative">
@@ -170,9 +167,6 @@ const Index = () => {
             <Button size="lg" variant="secondary" className="bg-white text-blue-600 hover:bg-gray-100 transition-all duration-300 transform hover:scale-105" onClick={() => navigate('/viewer')}>
               <Eye className="mr-2 h-4 w-4" />
               View Catalog
-            </Button>
-            <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-blue-600 transition-all duration-300" onClick={() => navigate('/auth')}>
-              User Access
             </Button>
           </div>
         </div>
