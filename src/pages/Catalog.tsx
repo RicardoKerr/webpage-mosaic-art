@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
@@ -46,8 +47,8 @@ const fetchStones = async (): Promise<Stone[]> => {
       available_in: item['Disponível em'] || 'N/A',
       base_color: item['Cor Base'] || 'N/A',
       characteristics: item['Características'] || 'N/A',
-      image_url: item['Caminho da Imagem'] || item['Nome'] || '/placeholder.svg',
-      image_name_site: item['Imagem_Name_Site'] || null,
+      image_filename: item['Imagem_Name_Site'] || '',
+      image_url: item['Caminho da Imagem'] || undefined,
     }));
 };
 

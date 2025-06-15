@@ -9,7 +9,7 @@ export interface Stone {
   base_color: string;
   characteristics: string;
   image_filename: string;
-  image_url: string; // This is generated dynamically in the component
+  image_url?: string; // This is generated dynamically in the component
 }
 
 export interface Filters {
