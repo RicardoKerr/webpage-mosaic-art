@@ -42,7 +42,7 @@ const Auth = () => {
   });
 
   const checkApprovalAndRedirect = async (userId: string, isLoginAttempt: boolean) => {
-    // @ts-ignore
+    // @ts-ignore - This table is not in the generated types yet because the migration has not been run
     const { data: approvalData, error: approvalError } = await supabase
       .from('user_approvals')
       .select('status')
@@ -67,7 +67,8 @@ const Auth = () => {
         navigate('/catalog');
     } else {
         if (isLoginAttempt) {
-            // No need to sign out, they should be taken to awaiting approval
+            toast({ title: 'Aguardando Aprovação', description: 'Sua conta precisa ser aprovada por um administrador.' });
+            await supabase.auth.signOut();
         }
         navigate('/awaiting-approval');
     }
@@ -79,7 +80,11 @@ const Auth = () => {
       (event, session) => {
         // This handles redirect after email confirmation
         if (event === "SIGNED_IN" && session) {
-          checkApprovalAndRedirect(session.user.id, false);
+          if (session.user.email === ADMIN_EMAIL) {
+            navigate('/admin');
+          } else {
+            checkApprovalAndRedirect(session.user.id, false);
+          }
         }
       }
     );
@@ -126,7 +131,6 @@ const Auth = () => {
         description: "Verifique seu email para confirmar a conta. Sua conta aguarda aprovação do administrador.",
       });
       form.reset();
-      navigate('/awaiting-approval');
     }
     setLoading(false);
   };

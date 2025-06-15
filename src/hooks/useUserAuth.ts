@@ -29,7 +29,7 @@ export const useUserAuth = () => {
         return;
       }
 
-      // @ts-ignore
+      // @ts-ignore - This table is not in the generated types yet because the migration has not been run
       const { data: approvalData, error } = await supabase
         .from('user_approvals')
         .select('status')

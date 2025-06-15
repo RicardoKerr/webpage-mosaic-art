@@ -1,3 +1,4 @@
+
 import { useAdminAuth } from '@/hooks/useAdminAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -23,20 +24,20 @@ const Admin = () => {
     const { data: approvals, isLoading: approvalsLoading } = useQuery({
         queryKey: ['approvals'],
         queryFn: async () => {
-            // @ts-ignore
+            // @ts-ignore - This table is not in the generated types yet because the migration has not been run
             const { data, error } = await supabase
                 .from('user_approvals')
                 .select('*')
                 .order('requested_at', { ascending: true });
             if (error) throw new Error(error.message);
-            return data as Approval[];
+            return data as unknown as Approval[];
         },
         enabled: !!user,
     });
     
     const mutation = useMutation({
         mutationFn: async ({ id, status }: { id: string, status: 'approved' | 'rejected' }) => {
-            // @ts-ignore
+            // @ts-ignore - This table is not in the generated types yet because the migration has not been run
             const { error } = await supabase
                 .from('user_approvals')
                 .update({ status, processed_at: new Date().toISOString(), processed_by: user?.email })
