@@ -1,9 +1,8 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ArrowLeft, Filter, Search, ZoomIn, ZoomOut, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
+import { ArrowLeft, Filter, Search, ZoomIn, ZoomOut, ChevronLeft, ChevronRight, Loader2, ChevronsLeft, ChevronsRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -154,6 +153,7 @@ const StoneViewer = () => {
     }
   };
 
+  // Atualiza o cálculo para centralizar o número ativo, quando possível.
   const scrollToCurrentPage = (page: number) => {
     if (paginationRef.current) {
       const pageButton = paginationRef.current.querySelector(`[data-page="${page}"]`) as HTMLElement;
@@ -162,10 +162,33 @@ const StoneViewer = () => {
         const containerWidth = container.offsetWidth;
         const buttonLeft = pageButton.offsetLeft;
         const buttonWidth = pageButton.offsetWidth;
-        
-        // Calculate scroll position to center the button
+        const pages = Array.from(paginationRef.current.querySelectorAll('[data-page]')) as HTMLElement[];
+
+        // Centraliza exceto quando está nas extremidades
+        if (pages.length > 0) {
+          const firstBtn = pages[0];
+          const lastBtn = pages[pages.length - 1];
+
+          // Se está nas 2 primeiras páginas ~ â esquerda total
+          if (pageButton === firstBtn || pageButton === pages[1]) {
+            container.scrollTo({
+              left: 0,
+              behavior: "smooth",
+            });
+            return;
+          }
+          // Se está nas 2 últimas páginas ~ à direita total
+          if (pageButton === lastBtn || pageButton === pages[pages.length - 2]) {
+            container.scrollTo({
+              left: container.scrollWidth,
+              behavior: "smooth",
+            });
+            return;
+          }
+        }
+
+        // Centraliza para páginas intermediárias
         const scrollLeft = buttonLeft - (containerWidth / 2) + (buttonWidth / 2);
-        
         container.scrollTo({
           left: scrollLeft,
           behavior: 'smooth'
@@ -344,19 +367,20 @@ const StoneViewer = () => {
                 <div className="flex items-center gap-2 md:justify-center">
                   <Button
                     variant="outline"
-                    size="sm"
+                    size="icon"
                     onClick={goToPreviousPage}
                     disabled={currentPage === 1}
                     className="flex-shrink-0"
+                    aria-label="Anterior"
                   >
-                    <ChevronLeft className="h-4 w-4" />
-                    Previous
+                    <ChevronsLeft className="w-5 h-5" />
                   </Button>
                   
                   {/* Scrollable page numbers container */}
                   <div 
                     ref={paginationRef}
-                    className="flex gap-1 overflow-x-auto scrollbar-hide px-2 md:px-0"
+                    className="flex gap-1 overflow-x-auto scrollbar-hide px-1 md:px-0"
+                    style={{ maxWidth: "90vw" }}
                   >
                     <div className="flex gap-1 min-w-max">
                       {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
@@ -364,9 +388,11 @@ const StoneViewer = () => {
                           key={page}
                           data-page={page}
                           variant={currentPage === page ? "default" : "outline"}
-                          size="sm"
+                          size="icon"
                           onClick={() => goToPage(page)}
-                          className="w-10 flex-shrink-0"
+                          className={`flex-shrink-0 transition-all duration-150 ${currentPage === page ? 'ring-2 ring-primary' : ''}`}
+                          style={{ minWidth: '2.25rem', padding: 0 }}
+                          aria-label={`Página ${page}`}
                         >
                           {page}
                         </Button>
@@ -376,13 +402,13 @@ const StoneViewer = () => {
                   
                   <Button
                     variant="outline"
-                    size="sm"
+                    size="icon"
                     onClick={goToNextPage}
                     disabled={currentPage === totalPages}
                     className="flex-shrink-0"
+                    aria-label="Próxima"
                   >
-                    Next
-                    <ChevronRight className="h-4 w-4" />
+                    <ChevronsRight className="w-5 h-5" />
                   </Button>
                 </div>
               </div>
