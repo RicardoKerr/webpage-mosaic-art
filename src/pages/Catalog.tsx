@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
@@ -119,9 +120,9 @@ const Catalog = () => {
     return searchMatch && categoryMatch && rockTypeMatch && colorMatch;
   });
 
-  const existingCategories = [...new Set(stones.map(stone => stone.category))].filter(Boolean).sort() as string[];
-  const existingRockTypes = [...new Set(stones.map(stone => stone.rock_type))].filter(Boolean).sort() as string[];
-  const existingColors = [...new Set(stones.map(stone => stone.base_color))].filter(Boolean).sort() as string[];
+  const existingCategories = [...new Set(stones.map(stone => stone.category))].filter(Boolean) as string[];
+  const existingRockTypes = [...new Set(stones.map(stone => stone.rock_type))].filter(Boolean) as string[];
+  const existingColors = [...new Set(stones.map(stone => stone.base_color))].filter(Boolean) as string[];
 
   return (
     <div className="min-h-screen bg-white">
@@ -190,3 +191,4 @@ const Catalog = () => {
 };
 
 export default Catalog;
+
