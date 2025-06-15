@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
@@ -26,8 +25,6 @@ const formSchema = z.object({
 
 type FormValues = z.infer<typeof formSchema>;
 
-const ADMIN_EMAIL = 'admin@techsolutions.com';
-
 const Auth = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -43,45 +40,41 @@ const Auth = () => {
 
   const checkApprovalAndRedirect = async (userId: string, isLoginAttempt: boolean) => {
     const { data: approvalData, error: approvalError } = await supabase
-      .from<any>('user_approvals')
+      .from('user_approvals')
       .select('status')
       .eq('user_id', userId)
-      .maybeSingle();
+      .single();
 
-    if (approvalError) {
+    if (approvalError && approvalError.code !== 'PGRST116') {
       toast({
-        title: "Aguardando Aprovação",
-        description: "Sua conta precisa ser aprovada por um administrador.",
-        variant: "default",
+        title: "Erro ao verificar status",
+        description: approvalError.message,
+        variant: "destructive",
       });
       if (isLoginAttempt) await supabase.auth.signOut();
-      navigate('/awaiting-approval');
       return;
     }
 
-    if (approvalData && approvalData.status === 'approved') {
+    if (approvalData?.status === 'approved') {
         if (isLoginAttempt) {
              toast({ title: "Login bem-sucedido!", description: "Redirecionando para o catálogo." });
         }
         navigate('/catalog');
     } else {
         if (isLoginAttempt) {
-            toast({ title: 'Aguardando Aprovação', description: 'Sua conta precisa ser aprovada por um administrador.' });
             await supabase.auth.signOut();
         }
         navigate('/awaiting-approval');
     }
   }
 
+  // Redirect if user is already logged in from a previous session
   useEffect(() => {
     const { data: authListener } = supabase.auth.onAuthStateChange(
       (event, session) => {
+        // This handles redirect after email confirmation
         if (event === "SIGNED_IN" && session) {
-          if (session.user.email === ADMIN_EMAIL) {
-            navigate('/admin');
-          } else {
-            checkApprovalAndRedirect(session.user.id, false);
-          }
+          checkApprovalAndRedirect(session.user.id, false);
         }
       }
     );
@@ -98,11 +91,7 @@ const Auth = () => {
         variant: "destructive",
       });
     } else if (data.user) {
-      if (data.user.email === ADMIN_EMAIL) {
-        navigate('/admin');
-      } else {
-        await checkApprovalAndRedirect(data.user.id, true);
-      }
+      await checkApprovalAndRedirect(data.user.id, true);
     }
     setLoading(false);
   };
@@ -128,6 +117,7 @@ const Auth = () => {
         description: "Verifique seu email para confirmar a conta. Sua conta aguarda aprovação do administrador.",
       });
       form.reset();
+      navigate('/awaiting-approval');
     }
     setLoading(false);
   };

@@ -5,8 +5,6 @@ import { useNavigate } from 'react-router-dom';
 import { User } from '@supabase/supabase-js';
 import { useToast } from '@/hooks/use-toast';
 
-const ADMIN_EMAIL = 'admin@techsolutions.com';
-
 export const useUserAuth = () => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
@@ -22,25 +20,18 @@ export const useUserAuth = () => {
         setLoading(false);
         return;
       }
-      
-      if (session.user.email === ADMIN_EMAIL) {
-        setUser(session.user);
-        setLoading(false);
-        return;
-      }
 
-      // Consulta genérica para evitar erro de tipagem até o types ser atualizado
       const { data: approvalData, error } = await supabase
-        .from<any>('user_approvals')
+        .from('user_approvals')
         .select('status')
         .eq('user_id', session.user.id)
-        .maybeSingle();
+        .single();
       
-      if (error) {
+      if (error && error.code !== 'PGRST116') {
           console.error("Error checking approval status", error);
-          toast({ title: 'Aguardando Aprovação', description: 'Sua conta precisa ser aprovada por um administrador.', variant: 'default' });
-          navigate('/awaiting-approval');
-      } else if (approvalData && approvalData.status === 'approved') {
+          toast({ title: 'Erro', description: 'Não foi possível verificar seu status de aprovação.', variant: 'destructive' });
+          navigate('/auth');
+      } else if (approvalData?.status === 'approved') {
         setUser(session.user);
       } else {
         navigate('/awaiting-approval');
@@ -54,6 +45,7 @@ export const useUserAuth = () => {
         if (event === 'SIGNED_OUT') {
             navigate('/auth');
         } else if (event === 'SIGNED_IN' && session) {
+            // Re-check on sign-in event to handle token refresh after email confirmation
             checkSessionAndApproval();
         }
     });
@@ -62,7 +54,7 @@ export const useUserAuth = () => {
         authListener.subscription.unsubscribe();
     };
 
-  }, [navigate, toast]);
+  }, [navigate]);
 
   return { user, loading };
 };

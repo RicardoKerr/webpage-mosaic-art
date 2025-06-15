@@ -6,7 +6,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { LayoutDashboard, LogOut } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
+import { Badge } from '@/components/ui/badge'; // This was missing
 
 type Approval = {
     id: string;
@@ -21,12 +21,11 @@ const Admin = () => {
     const queryClient = useQueryClient();
     const { toast } = useToast();
 
-    // Consulta genérica para evitar problemas de tipagem
     const { data: approvals, isLoading: approvalsLoading } = useQuery({
         queryKey: ['approvals'],
         queryFn: async () => {
             const { data, error } = await supabase
-                .from<any>('user_approvals')
+                .from('user_approvals')
                 .select('*')
                 .order('requested_at', { ascending: true });
             if (error) throw new Error(error.message);
@@ -38,7 +37,7 @@ const Admin = () => {
     const mutation = useMutation({
         mutationFn: async ({ id, status }: { id: string, status: 'approved' | 'rejected' }) => {
             const { error } = await supabase
-                .from<any>('user_approvals')
+                .from('user_approvals')
                 .update({ status, processed_at: new Date().toISOString(), processed_by: user?.email })
                 .eq('id', id);
             if (error) throw new Error(error.message);
@@ -47,7 +46,7 @@ const Admin = () => {
             queryClient.invalidateQueries({ queryKey: ['approvals'] });
             toast({ title: 'Sucesso', description: 'Status do usuário atualizado.' });
         },
-        onError: (error: any) => {
+        onError: (error) => {
             toast({ title: 'Erro', description: error.message, variant: 'destructive' });
         }
     });
@@ -58,7 +57,7 @@ const Admin = () => {
 
     const getStatusVariant = (status: Approval['status']) => {
         switch (status) {
-            case 'approved': return 'default';
+            case 'approved': return 'success';
             case 'rejected': return 'destructive';
             case 'pending': return 'secondary';
             default: return 'default';

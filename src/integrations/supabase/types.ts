@@ -426,36 +426,6 @@ export type Database = {
         }
         Relationships: []
       }
-      user_approvals: {
-        Row: {
-          email: string
-          id: string
-          processed_at: string | null
-          processed_by: string | null
-          requested_at: string
-          status: string
-          user_id: string
-        }
-        Insert: {
-          email: string
-          id?: string
-          processed_at?: string | null
-          processed_by?: string | null
-          requested_at?: string
-          status?: string
-          user_id: string
-        }
-        Update: {
-          email?: string
-          id?: string
-          processed_at?: string | null
-          processed_by?: string | null
-          requested_at?: string
-          status?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
     }
     Views: {
       [_ in never]: never
