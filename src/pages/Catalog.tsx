@@ -14,7 +14,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { LogOut } from 'lucide-react';
+import { LogOut, ZoomIn, ZoomOut } from 'lucide-react';
 import FilterBar from '@/components/catalog/FilterBar';
 import { Filters, Stone } from '@/components/catalog/types';
 import { useImageUpload } from '@/hooks/useImageUpload';
@@ -60,6 +60,8 @@ const Catalog = () => {
     status: string;
   } | null>(null);
 
+  const [zoomedImage, setZoomedImage] = useState<string | null>(null);
+
   useEffect(() => {
     const storedUser = localStorage.getItem('aralogo_user');
     if (storedUser) {
@@ -76,6 +78,14 @@ const Catalog = () => {
       title: "Logout realizado com sucesso!",
       description: "Redirecionando para a página de autenticação.",
     });
+  };
+
+  const handleImageZoom = (imageUrl: string) => {
+    setZoomedImage(imageUrl);
+  };
+
+  const closeZoom = () => {
+    setZoomedImage(null);
   };
 
   const { data: stones = [], isLoading, isError } = useQuery<Stone[]>({
@@ -188,7 +198,7 @@ const Catalog = () => {
           totalCount={stones.length}
         />
 
-        {/* Lista simples das pedras por enquanto */}
+        {/* Grid com layout igual ao StoneViewer */}
         <div className="mt-6">
           {filteredStones.length === 0 ? (
             <div className="text-center py-10">
@@ -196,18 +206,84 @@ const Catalog = () => {
               <p className="text-gray-500">Tente ajustar os filtros de pesquisa.</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-              {filteredStones.map(stone => (
-                <div key={stone.id} className="border rounded-lg p-4 bg-white shadow">
-                  <h3 className="font-bold text-lg">{stone.name}</h3>
-                  <p className="text-sm text-gray-600">{stone.category}</p>
-                  <p className="text-sm text-gray-600">{stone.rock_type}</p>
-                  <p className="text-sm text-gray-600">{stone.base_color}</p>
-                </div>
-              ))}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {filteredStones.map((stone) => {
+                const imageIdentifier = stone.image_filename || stone.name;
+                const imageUrl = getImageUrl(imageIdentifier);
+                
+                return (
+                  <div key={stone.id} className="produto border border-gray-200 rounded-lg overflow-hidden shadow-lg bg-white">
+                    <div className="p-6">
+                      <h1 className="text-2xl font-bold text-gray-800 border-b-2 border-gray-800 pb-3 mb-4">
+                        {stone.name}
+                      </h1>
+                      
+                      <div className="font-bold text-lg mb-6">
+                        Item Name: {stone.name}
+                      </div>
+                      
+                      <div className="text-center my-8 relative">
+                        <img 
+                          src={imageUrl}
+                          alt={stone.name}
+                          className="w-full h-64 object-cover mx-auto border border-gray-300 rounded-lg shadow-lg cursor-pointer"
+                          onClick={() => handleImageZoom(imageUrl)}
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            console.error('Error loading image:', imageUrl, 'for stone:', stone.name);
+                            target.src = '/placeholder.svg';
+                          }}
+                        />
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="absolute top-2 right-2"
+                          onClick={() => handleImageZoom(imageUrl)}
+                        >
+                          <ZoomIn className="h-4 w-4" />
+                        </Button>
+                      </div>
+                      
+                      <div className="bg-gray-100 p-6 rounded-lg">
+                        <strong className="text-lg">Especificações Técnicas:</strong>
+                        <ul className="mt-4 space-y-2 pl-6">
+                          <li><strong>Categoria:</strong> {stone.category}</li>
+                          <li><strong>Tipo de Rocha:</strong> {stone.rock_type}</li>
+                          <li><strong>Acabamentos Disponíveis:</strong> {stone.finishes}</li>
+                          <li><strong>Disponível em:</strong> {stone.available_in}</li>
+                          <li><strong>Cor Base:</strong> {stone.base_color}</li>
+                          <li><strong>Características:</strong> {stone.characteristics}</li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           )}
         </div>
+
+        {/* Zoom Modal - igual ao StoneViewer */}
+        {zoomedImage && (
+          <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50" onClick={closeZoom}>
+            <div className="relative w-[80vw] h-[80vh] p-4">
+              <Button
+                variant="outline"
+                size="sm"
+                className="absolute top-2 right-2 z-10"
+                onClick={closeZoom}
+              >
+                <ZoomOut className="h-4 w-4" />
+              </Button>
+              <img
+                src={zoomedImage}
+                alt="Zoom"
+                className="w-full h-full object-contain"
+                onClick={(e) => e.stopPropagation()}
+              />
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
