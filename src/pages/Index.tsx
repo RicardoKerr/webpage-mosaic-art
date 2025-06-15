@@ -1,15 +1,11 @@
-
 import React from 'react';
 import { ArrowRight, Code, Laptop, Users, Zap, Database, Upload, Eye } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useNavigate } from 'react-router-dom';
-
 const Index = () => {
   const navigate = useNavigate();
-
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
+  return <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
       {/* Hero Section */}
       <section className="relative px-6 lg:px-8 py-24 sm:py-32">
         <div className="mx-auto max-w-7xl">
@@ -24,30 +20,17 @@ const Index = () => {
                 integrated database and professional visualization.
               </p>
               <div className="mt-10 flex items-center gap-x-6">
-                <Button 
-                  size="lg" 
-                  className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 transition-all duration-300 transform hover:scale-105"
-                  onClick={() => navigate('/viewer')}
-                >
+                <Button size="lg" className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 transition-all duration-300 transform hover:scale-105" onClick={() => navigate('/viewer')}>
                   View Catalog
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
-                <Button 
-                  variant="outline" 
-                  size="lg" 
-                  className="hover:bg-gray-50 transition-all duration-300"
-                  onClick={() => navigate('/auth')}
-                >
+                <Button variant="outline" size="lg" className="hover:bg-gray-50 transition-all duration-300" onClick={() => navigate('/auth')}>
                   User Access
                 </Button>
               </div>
             </div>
             <div className="relative">
-              <img
-                src="/lovable-uploads/14b3e1d0-8f04-4112-a939-ede0d6ad3f58.png"
-                alt="Natural marble texture"
-                className="rounded-2xl shadow-2xl transform hover:scale-105 transition-transform duration-300"
-              />
+              <img src="/lovable-uploads/14b3e1d0-8f04-4112-a939-ede0d6ad3f58.png" alt="Natural marble texture" className="rounded-2xl shadow-2xl transform hover:scale-105 transition-transform duration-300" />
               <div className="absolute -bottom-6 -right-6 w-24 h-24 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full opacity-20 blur-xl"></div>
             </div>
           </div>
@@ -125,14 +108,10 @@ const Index = () => {
           <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4">
             <Card className="overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2">
               <div className="aspect-square overflow-hidden">
-                <img
-                  src="/lovable-uploads/14b3e1d0-8f04-4112-a939-ede0d6ad3f58.png"
-                  alt="Marble with golden veins"
-                  className="object-cover w-full h-full hover:scale-110 transition-transform duration-300"
-                />
+                <img src="/lovable-uploads/14b3e1d0-8f04-4112-a939-ede0d6ad3f58.png" alt="Marble with golden veins" className="object-cover w-full h-full hover:scale-110 transition-transform duration-300" />
               </div>
               <CardHeader>
-                <CardTitle className="text-sm">Classic Marble</CardTitle>
+                <CardTitle className="text-sm">Classic Stone</CardTitle>
                 <CardDescription className="text-xs">
                   Natural veins in golden tones
                 </CardDescription>
@@ -141,14 +120,10 @@ const Index = () => {
 
             <Card className="overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2">
               <div className="aspect-square overflow-hidden">
-                <img
-                  src="/lovable-uploads/8c6ffb9e-aae1-4b77-bccf-0d00024f5aff.png"
-                  alt="Textured marble"
-                  className="object-cover w-full h-full hover:scale-110 transition-transform duration-300"
-                />
+                <img src="/lovable-uploads/8c6ffb9e-aae1-4b77-bccf-0d00024f5aff.png" alt="Textured marble" className="object-cover w-full h-full hover:scale-110 transition-transform duration-300" />
               </div>
               <CardHeader>
-                <CardTitle className="text-sm">Textured Marble</CardTitle>
+                <CardTitle className="text-sm">Textured Stone</CardTitle>
                 <CardDescription className="text-xs">
                   Natural surface with relief
                 </CardDescription>
@@ -157,14 +132,10 @@ const Index = () => {
 
             <Card className="overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2">
               <div className="aspect-square overflow-hidden">
-                <img
-                  src="/lovable-uploads/4b24d0c6-d562-46ec-8bc4-7ebfa01a9a49.png"
-                  alt="Multicolored marble"
-                  className="object-cover w-full h-full hover:scale-110 transition-transform duration-300"
-                />
+                <img src="/lovable-uploads/4b24d0c6-d562-46ec-8bc4-7ebfa01a9a49.png" alt="Multicolored marble" className="object-cover w-full h-full hover:scale-110 transition-transform duration-300" />
               </div>
               <CardHeader>
-                <CardTitle className="text-sm">Multicolor Marble</CardTitle>
+                <CardTitle className="text-sm">Multicolor Stone</CardTitle>
                 <CardDescription className="text-xs">
                   Varied and unique tones
                 </CardDescription>
@@ -173,14 +144,10 @@ const Index = () => {
 
             <Card className="overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2">
               <div className="aspect-square overflow-hidden">
-                <img
-                  src="/lovable-uploads/ab956562-5b10-4384-9d89-cf0616450602.png"
-                  alt="Green marble"
-                  className="object-cover w-full h-full hover:scale-110 transition-transform duration-300"
-                />
+                <img src="/lovable-uploads/ab956562-5b10-4384-9d89-cf0616450602.png" alt="Green marble" className="object-cover w-full h-full hover:scale-110 transition-transform duration-300" />
               </div>
               <CardHeader>
-                <CardTitle className="text-sm">Green Marble</CardTitle>
+                <CardTitle className="text-sm">Green Stone</CardTitle>
                 <CardDescription className="text-xs">
                   Natural green tones
                 </CardDescription>
@@ -200,21 +167,11 @@ const Index = () => {
             Explore our complete collection of natural stones.
           </p>
           <div className="mt-10 flex items-center justify-center gap-x-6">
-            <Button 
-              size="lg" 
-              variant="secondary" 
-              className="bg-white text-blue-600 hover:bg-gray-100 transition-all duration-300 transform hover:scale-105"
-              onClick={() => navigate('/viewer')}
-            >
+            <Button size="lg" variant="secondary" className="bg-white text-blue-600 hover:bg-gray-100 transition-all duration-300 transform hover:scale-105" onClick={() => navigate('/viewer')}>
               <Eye className="mr-2 h-4 w-4" />
               View Catalog
             </Button>
-            <Button 
-              size="lg" 
-              variant="outline" 
-              className="border-white text-white hover:bg-white hover:text-blue-600 transition-all duration-300"
-              onClick={() => navigate('/auth')}
-            >
+            <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-blue-600 transition-all duration-300" onClick={() => navigate('/auth')}>
               User Access
             </Button>
           </div>
@@ -257,8 +214,6 @@ const Index = () => {
           </div>
         </div>
       </footer>
-    </div>
-  );
+    </div>;
 };
-
 export default Index;
