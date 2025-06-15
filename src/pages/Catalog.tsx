@@ -166,8 +166,9 @@ const Catalog = () => {
   });
 
   const updateStoneMutation = useMutation({
-    mutationFn: async (stoneToUpdate: Partial<Stone> & { id: string }) => {
-      const { id, ...data } = stoneToUpdate;
+    mutationFn: async ({ oldStone, newStoneData }: { oldStone: Stone, newStoneData: Partial<Stone> & { id: string } }) => {
+      const { id, ...data } = newStoneData;
+      
       const dbData = {
         'Nome': data.name,
         'Categoria': data.category,
@@ -177,8 +178,44 @@ const Catalog = () => {
         'Cor Base': data.base_color,
         'Características': data.characteristics,
       };
-      const { error } = await supabase.from('aralogo_simples').update(dbData).eq('id', Number(id));
-      if (error) throw new Error(error.message);
+
+      const { error: updateError } = await supabase.from('aralogo_simples').update(dbData).eq('id', Number(id));
+      if (updateError) throw new Error(updateError.message);
+
+      const changes: Record<string, { from: any; to: any }> = {};
+      const keyMapping: { [key in keyof StoneFormData]: string } = {
+          name: 'Nome',
+          category: 'Categoria',
+          rock_type: 'Tipo de Rocha',
+          finishes: 'Acabamentos Disponíveis',
+          available_in: 'Disponível em',
+          base_color: 'Cor Base',
+          characteristics: 'Características',
+      };
+      
+      for (const key of Object.keys(keyMapping) as Array<keyof StoneFormData>) {
+          if (oldStone[key] !== data[key]) {
+              changes[keyMapping[key]] = {
+                  from: oldStone[key],
+                  to: data[key],
+              };
+          }
+      }
+      
+      if (Object.keys(changes).length > 0) {
+        const { data: { session } } = await supabase.auth.getSession();
+        const userEmail = session?.user?.email;
+
+        const { error: logError } = await supabase.from('aralogo_changes').insert({
+            stone_id: Number(id),
+            user_email: userEmail,
+            changes: changes,
+        });
+
+        if (logError) {
+          console.error("Failed to log changes:", logError.message);
+        }
+      }
     },
     onSuccess: () => {
       toast({ title: "Sucesso", description: "Pedra atualizada." });
@@ -347,7 +384,7 @@ const Catalog = () => {
 
   const handleSave = () => {
     if (editingStone) {
-      updateStoneMutation.mutate({ id: editingStone.id, ...formData });
+      updateStoneMutation.mutate({ oldStone: editingStone, newStoneData: { id: editingStone.id, ...formData } });
     } else if (isAddingNew) {
       createStoneMutation.mutate(formData);
     }

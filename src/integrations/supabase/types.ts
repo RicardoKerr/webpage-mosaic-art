@@ -51,6 +51,38 @@ export type Database = {
         }
         Relationships: []
       }
+      aralogo_changes: {
+        Row: {
+          changes: Json
+          created_at: string
+          id: string
+          stone_id: number
+          user_email: string | null
+        }
+        Insert: {
+          changes: Json
+          created_at?: string
+          id?: string
+          stone_id: number
+          user_email?: string | null
+        }
+        Update: {
+          changes?: Json
+          created_at?: string
+          id?: string
+          stone_id?: number
+          user_email?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_aralogo_simples"
+            columns: ["stone_id"]
+            isOneToOne: false
+            referencedRelation: "aralogo_simples"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       aralogo_simples: {
         Row: {
           "Acabamentos Disponíveis": string | null
