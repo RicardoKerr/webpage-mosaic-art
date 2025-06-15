@@ -10,6 +10,7 @@ import { LogOut, ZoomIn, ZoomOut } from 'lucide-react';
 import FilterBar from '@/components/catalog/FilterBar';
 import { Filters, Stone } from '@/components/catalog/types';
 import { useImageUpload } from '@/hooks/useImageUpload';
+
 const fetchStones = async (): Promise<Stone[]> => {
   const {
     data,
@@ -35,6 +36,7 @@ const fetchStones = async (): Promise<Stone[]> => {
     image_url: item['Caminho da Imagem'] || undefined
   }));
 };
+
 const Catalog = () => {
   const navigate = useNavigate();
   const {
@@ -50,6 +52,7 @@ const Catalog = () => {
     status: string;
   } | null>(null);
   const [zoomedImage, setZoomedImage] = useState<string | null>(null);
+  
   useEffect(() => {
     const storedUser = localStorage.getItem('aralogo_user');
     if (storedUser) {
@@ -58,6 +61,7 @@ const Catalog = () => {
       navigate('/auth');
     }
   }, [navigate]);
+  
   const handleLogout = () => {
     localStorage.removeItem('aralogo_user');
     navigate('/auth');
@@ -66,12 +70,15 @@ const Catalog = () => {
       description: "Redirecionando para a página de autenticação."
     });
   };
+  
   const handleImageZoom = (imageUrl: string) => {
     setZoomedImage(imageUrl);
   };
+  
   const closeZoom = () => {
     setZoomedImage(null);
   };
+  
   const {
     data: stones = [],
     isLoading,
@@ -80,18 +87,21 @@ const Catalog = () => {
     queryKey: ['aralogo_simples'],
     queryFn: fetchStones
   });
+  
   const [filters, setFilters] = useState<Filters>({
     search: '',
     category: 'all',
     rock_type: 'all',
     base_color: 'all'
   });
+  
   const handleFilterChange = (key: keyof Filters, value: string) => {
     setFilters(prevFilters => ({
       ...prevFilters,
       [key]: value
     }));
   };
+  
   const clearFilters = () => {
     setFilters({
       search: '',
@@ -100,6 +110,7 @@ const Catalog = () => {
       base_color: 'all'
     });
   };
+  
   const filteredStones = stones.filter(stone => {
     const searchRegex = new RegExp(filters.search, 'i');
     const searchMatch = searchRegex.test(stone.name) || searchRegex.test(stone.characteristics);
@@ -108,11 +119,12 @@ const Catalog = () => {
     const colorMatch = filters.base_color === 'all' || stone.base_color === filters.base_color;
     return searchMatch && categoryMatch && rockTypeMatch && colorMatch;
   });
-
+  
   // Ordenação crescente (alfabética) dos filtros
   const existingCategories = [...new Set(stones.map(stone => stone.category))].filter(Boolean).sort() as string[];
   const existingRockTypes = [...new Set(stones.map(stone => stone.rock_type))].filter(Boolean).sort() as string[];
   const existingColors = [...new Set(stones.map(stone => stone.base_color))].filter(Boolean).sort() as string[];
+  
   if (isLoading) {
     return <div className="min-h-screen bg-white flex items-center justify-center">
       <p>Carregando pedras...</p>
@@ -193,14 +205,14 @@ const Catalog = () => {
                       </div>
                       
                       <div className="bg-gray-100 p-6 rounded-lg">
-                        <strong className="text-lg">Especificações Técnicas:</strong>
+                        <strong className="text-lg">Technical Specifications:</strong>
                         <ul className="mt-4 space-y-2 pl-6">
-                          <li><strong>Categoria:</strong> {stone.category}</li>
-                          <li><strong>Tipo de Rocha:</strong> {stone.rock_type}</li>
-                          <li><strong>Acabamentos Disponíveis:</strong> {stone.finishes}</li>
-                          <li><strong>Disponível em:</strong> {stone.available_in}</li>
-                          <li><strong>Cor Base:</strong> {stone.base_color}</li>
-                          <li><strong>Características:</strong> {stone.characteristics}</li>
+                          <li><strong>Category:</strong> {stone.category}</li>
+                          <li><strong>Rock type:</strong> {stone.rock_type}</li>
+                          <li><strong>Available finishes:</strong> {stone.finishes}</li>
+                          <li><strong>Available in:</strong> {stone.available_in}</li>
+                          <li><strong>Base color:</strong> {stone.base_color}</li>
+                          <li><strong>Characteristics:</strong> {stone.characteristics}</li>
                         </ul>
                       </div>
                     </div>
@@ -221,4 +233,5 @@ const Catalog = () => {
       </div>
     </div>;
 };
+
 export default Catalog;

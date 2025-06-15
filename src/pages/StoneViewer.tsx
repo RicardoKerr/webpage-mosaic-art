@@ -7,6 +7,7 @@ import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useImageUpload } from '@/hooks/useImageUpload';
+
 interface Stone {
   id: string;
   name: string;
@@ -19,6 +20,7 @@ interface Stone {
   image_url: string;
   image_name_site?: string;
 }
+
 const fetchStones = async (): Promise<Stone[]> => {
   const {
     data,
@@ -45,12 +47,14 @@ const fetchStones = async (): Promise<Stone[]> => {
     image_name_site: item['Imagem_Name_Site'] || null
   }));
 };
+
 const StoneViewer = () => {
   const navigate = useNavigate();
   const {
     getImageUrl
   } = useImageUpload();
   const paginationRef = useRef<HTMLDivElement>(null);
+  
   const {
     data: stones = [],
     isLoading,
@@ -59,6 +63,7 @@ const StoneViewer = () => {
     queryKey: ['aralogo_simples'],
     queryFn: fetchStones
   });
+  
   const [filteredStones, setFilteredStones] = useState<Stone[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('all');
@@ -100,15 +105,18 @@ const StoneViewer = () => {
       applyFilters();
     }
   }, [searchTerm, categoryFilter, rockTypeFilter, colorFilter, stones, isLoading]);
+  
   const clearFilters = () => {
     setSearchTerm('');
     setCategoryFilter('all');
     setRockTypeFilter('all');
     setColorFilter('all');
   };
+  
   const handleImageZoom = (imageUrl: string) => {
     setZoomedImage(imageUrl);
   };
+  
   const closeZoom = () => {
     setZoomedImage(null);
   };
@@ -187,6 +195,7 @@ const StoneViewer = () => {
       setTimeout(() => scrollToCurrentPage(currentPage), 100);
     }
   }, [currentPage]);
+  
   return <div className="min-h-screen bg-white">
       <div className="max-w-7xl mx-auto p-6">
         <div className="mb-6">
@@ -291,14 +300,14 @@ const StoneViewer = () => {
                       </div>
                       
                       <div className="bg-gray-100 p-6 rounded-lg">
-                        <strong className="text-lg">Especificações Técnicas:</strong>
+                        <strong className="text-lg">Technical Specifications:</strong>
                         <ul className="mt-4 space-y-2 pl-6">
-                          <li><strong>Categoria:</strong> {stone.category}</li>
-                          <li><strong>Tipo de Rocha:</strong> {stone.rock_type}</li>
-                          <li><strong>Acabamentos Disponíveis:</strong> {stone.finishes}</li>
-                          <li><strong>Disponível em:</strong> {stone.available_in}</li>
-                          <li><strong>Cor Base:</strong> {stone.base_color}</li>
-                          <li><strong>Características:</strong> {stone.characteristics}</li>
+                          <li><strong>Category:</strong> {stone.category}</li>
+                          <li><strong>Rock type:</strong> {stone.rock_type}</li>
+                          <li><strong>Available finishes:</strong> {stone.finishes}</li>
+                          <li><strong>Available in:</strong> {stone.available_in}</li>
+                          <li><strong>Base color:</strong> {stone.base_color}</li>
+                          <li><strong>Characteristics:</strong> {stone.characteristics}</li>
                         </ul>
                       </div>
                     </div>
@@ -358,4 +367,5 @@ const StoneViewer = () => {
       </div>
     </div>;
 };
+
 export default StoneViewer;
