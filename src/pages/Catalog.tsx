@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
@@ -15,11 +16,12 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { LogOut } from 'lucide-react';
 import FilterBar from '@/components/catalog/FilterBar';
-import StoneGrid from '@/components/catalog/StoneGrid';
 import { Filters, Stone } from '@/components/catalog/types';
 import { useImageUpload } from '@/hooks/useImageUpload';
 import { Input } from '@/components/ui/input';
 import { Search } from 'lucide-react';
+
+// Removed: import StoneGrid from '@/components/catalog/StoneGrid';
 
 const fetchStones = async (): Promise<Stone[]> => {
   const { data, error } = await supabase
@@ -47,7 +49,7 @@ const fetchStones = async (): Promise<Stone[]> => {
       base_color: item['Cor Base'] || 'N/A',
       characteristics: item['Características'] || 'N/A',
       image_url: item['Caminho da Imagem'] || item['Nome'] || '/placeholder.svg',
-      image_name_site: item['Imagem_Name_Site'] || null,
+      image_filename: item['Imagem_Name_Site'] || '', // <-- Added this line
     }));
 };
 
@@ -176,16 +178,17 @@ const Catalog = () => {
           filteredCount={filteredStones.length}
           totalCount={stones.length}
         />
-
-        <StoneGrid
+        {/* StoneGrid was removed due to missing file. If needed, restore the component and file. */}
+        {/* <StoneGrid
           stones={filteredStones}
           isLoading={isLoading}
           isError={isError}
           getImageUrl={getImageUrl}
-        />
+        /> */}
       </div>
     </div>
   );
 };
 
 export default Catalog;
+
