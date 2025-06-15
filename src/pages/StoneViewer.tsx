@@ -214,24 +214,24 @@ const StoneViewer = () => {
             className="mb-4"
           >
             <ArrowLeft className="mr-2 h-4 w-4" />
-            Voltar
+            Back
           </Button>
           <h1 className="text-3xl font-bold text-gray-900 mb-4">
-            Catálogo de Pedras Naturais
+            Natural Stone Catalog
           </h1>
           
-          {/* Área de Filtro */}
+          {/* Filter Area */}
           <div className="bg-gray-50 p-6 rounded-lg mb-6">
             <div className="flex items-center gap-2 mb-4">
               <Filter className="h-5 w-5 text-gray-600" />
-              <h2 className="text-lg font-semibold text-gray-700">Filtros de Busca</h2>
+              <h2 className="text-lg font-semibold text-gray-700">Search Filters</h2>
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
               <div className="relative">
                 <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                 <Input
-                  placeholder="Buscar por nome..."
+                  placeholder="Search by name..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-10"
@@ -240,10 +240,10 @@ const StoneViewer = () => {
               
               <Select value={categoryFilter} onValueChange={setCategoryFilter}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Categoria" />
+                  <SelectValue placeholder="Category" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Todas as categorias</SelectItem>
+                  <SelectItem value="all">All categories</SelectItem>
                   {categories.map(category => (
                     <SelectItem key={category} value={category}>{category}</SelectItem>
                   ))}
@@ -252,10 +252,10 @@ const StoneViewer = () => {
 
               <Select value={rockTypeFilter} onValueChange={setRockTypeFilter}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Tipo de Rocha" />
+                  <SelectValue placeholder="Rock Type" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Todos os tipos</SelectItem>
+                  <SelectItem value="all">All types</SelectItem>
                   {rockTypes.map(type => (
                     <SelectItem key={type} value={type}>{type}</SelectItem>
                   ))}
@@ -264,10 +264,10 @@ const StoneViewer = () => {
 
               <Select value={colorFilter} onValueChange={setColorFilter}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Cor Base" />
+                  <SelectValue placeholder="Base Color" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Todas as cores</SelectItem>
+                  <SelectItem value="all">All colors</SelectItem>
                   {colors.map(color => (
                     <SelectItem key={color} value={color}>{color}</SelectItem>
                   ))}
@@ -277,10 +277,10 @@ const StoneViewer = () => {
 
             <div className="flex items-center justify-between">
               <p className="text-sm text-gray-600">
-                Mostrando {filteredStones.length > 0 ? startIndex + 1 : 0}-{Math.min(endIndex, filteredStones.length)} de {filteredStones.length} pedras
+                Showing {filteredStones.length > 0 ? startIndex + 1 : 0}-{Math.min(endIndex, filteredStones.length)} of {filteredStones.length} stones
               </p>
               <Button variant="outline" size="sm" onClick={clearFilters}>
-                Limpar Filtros
+                Clear Filters
               </Button>
             </div>
           </div>
