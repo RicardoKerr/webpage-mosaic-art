@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -55,6 +55,7 @@ const fetchStones = async (): Promise<Stone[]> => {
 const StoneViewer = () => {
   const navigate = useNavigate();
   const { getImageUrl } = useImageUpload();
+  const paginationRef = useRef<HTMLDivElement>(null);
   
   const { data: stones = [], isLoading, isError } = useQuery<Stone[]>({
     queryKey: ['aralogo_simples'],
@@ -134,19 +135,51 @@ const StoneViewer = () => {
 
   const goToPage = (page: number) => {
     setCurrentPage(page);
+    scrollToCurrentPage(page);
   };
 
   const goToPreviousPage = () => {
     if (currentPage > 1) {
-      setCurrentPage(currentPage - 1);
+      const newPage = currentPage - 1;
+      setCurrentPage(newPage);
+      scrollToCurrentPage(newPage);
     }
   };
 
   const goToNextPage = () => {
     if (currentPage < totalPages) {
-      setCurrentPage(currentPage + 1);
+      const newPage = currentPage + 1;
+      setCurrentPage(newPage);
+      scrollToCurrentPage(newPage);
     }
   };
+
+  const scrollToCurrentPage = (page: number) => {
+    if (paginationRef.current) {
+      const pageButton = paginationRef.current.querySelector(`[data-page="${page}"]`) as HTMLElement;
+      if (pageButton) {
+        const container = paginationRef.current;
+        const containerWidth = container.offsetWidth;
+        const buttonLeft = pageButton.offsetLeft;
+        const buttonWidth = pageButton.offsetWidth;
+        
+        // Calculate scroll position to center the button
+        const scrollLeft = buttonLeft - (containerWidth / 2) + (buttonWidth / 2);
+        
+        container.scrollTo({
+          left: scrollLeft,
+          behavior: 'smooth'
+        });
+      }
+    }
+  };
+
+  // Auto-scroll to current page when component mounts or page changes
+  useEffect(() => {
+    if (currentPage > 1) {
+      setTimeout(() => scrollToCurrentPage(currentPage), 100);
+    }
+  }, [currentPage]);
 
   return (
     <div className="min-h-screen bg-white">
@@ -321,11 +354,15 @@ const StoneViewer = () => {
                   </Button>
                   
                   {/* Scrollable page numbers container */}
-                  <div className="flex gap-1 overflow-x-auto scrollbar-hide px-2 md:px-0">
+                  <div 
+                    ref={paginationRef}
+                    className="flex gap-1 overflow-x-auto scrollbar-hide px-2 md:px-0"
+                  >
                     <div className="flex gap-1 min-w-max">
                       {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
                         <Button
                           key={page}
+                          data-page={page}
                           variant={currentPage === page ? "default" : "outline"}
                           size="sm"
                           onClick={() => goToPage(page)}
