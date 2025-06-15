@@ -214,24 +214,24 @@ const StoneViewer = () => {
             className="mb-4"
           >
             <ArrowLeft className="mr-2 h-4 w-4" />
-            Back
+            Voltar
           </Button>
           <h1 className="text-3xl font-bold text-gray-900 mb-4">
-            Natural Stone Catalog
+            Catálogo de Pedras Naturais
           </h1>
           
-          {/* Filter Section */}
+          {/* Área de Filtro */}
           <div className="bg-gray-50 p-6 rounded-lg mb-6">
             <div className="flex items-center gap-2 mb-4">
               <Filter className="h-5 w-5 text-gray-600" />
-              <h2 className="text-lg font-semibold text-gray-700">Search Filters</h2>
+              <h2 className="text-lg font-semibold text-gray-700">Filtros de Busca</h2>
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
               <div className="relative">
                 <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                 <Input
-                  placeholder="Search by name..."
+                  placeholder="Buscar por nome..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-10"
@@ -240,10 +240,10 @@ const StoneViewer = () => {
               
               <Select value={categoryFilter} onValueChange={setCategoryFilter}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Category" />
+                  <SelectValue placeholder="Categoria" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All categories</SelectItem>
+                  <SelectItem value="all">Todas as categorias</SelectItem>
                   {categories.map(category => (
                     <SelectItem key={category} value={category}>{category}</SelectItem>
                   ))}
@@ -252,10 +252,10 @@ const StoneViewer = () => {
 
               <Select value={rockTypeFilter} onValueChange={setRockTypeFilter}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Rock Type" />
+                  <SelectValue placeholder="Tipo de Rocha" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All types</SelectItem>
+                  <SelectItem value="all">Todos os tipos</SelectItem>
                   {rockTypes.map(type => (
                     <SelectItem key={type} value={type}>{type}</SelectItem>
                   ))}
@@ -264,10 +264,10 @@ const StoneViewer = () => {
 
               <Select value={colorFilter} onValueChange={setColorFilter}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Base Color" />
+                  <SelectValue placeholder="Cor Base" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All colors</SelectItem>
+                  <SelectItem value="all">Todas as cores</SelectItem>
                   {colors.map(color => (
                     <SelectItem key={color} value={color}>{color}</SelectItem>
                   ))}
@@ -277,10 +277,10 @@ const StoneViewer = () => {
 
             <div className="flex items-center justify-between">
               <p className="text-sm text-gray-600">
-                Showing {filteredStones.length > 0 ? startIndex + 1 : 0}-{Math.min(endIndex, filteredStones.length)} of {filteredStones.length} stones
+                Mostrando {filteredStones.length > 0 ? startIndex + 1 : 0}-{Math.min(endIndex, filteredStones.length)} de {filteredStones.length} pedras
               </p>
               <Button variant="outline" size="sm" onClick={clearFilters}>
-                Clear Filters
+                Limpar Filtros
               </Button>
             </div>
           </div>
@@ -289,14 +289,14 @@ const StoneViewer = () => {
         {isLoading && (
           <div className="flex justify-center items-center py-12">
             <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
-            <p className="ml-4 text-gray-600">Loading stones...</p>
+            <p className="ml-4 text-gray-600">Carregando pedras...</p>
           </div>
         )}
 
         {isError && (
           <div className="text-center py-12 text-red-600">
-            <p>An error occurred while loading the catalog.</p>
-            <p>Please try again later.</p>
+            <p>Um erro ocorreu ao carregar o catálogo.</p>
+            <p>Por favor, tente novamente mais tarde.</p>
           </div>
         )}
 
@@ -344,14 +344,14 @@ const StoneViewer = () => {
                       </div>
                       
                       <div className="bg-gray-100 p-6 rounded-lg">
-                        <strong className="text-lg">Technical Specifications:</strong>
+                        <strong className="text-lg">Especificações Técnicas:</strong>
                         <ul className="mt-4 space-y-2 pl-6">
-                          <li><strong>Category:</strong> {stone.category}</li>
-                          <li><strong>Rock type:</strong> {stone.rock_type}</li>
-                          <li><strong>Available finishes:</strong> {stone.finishes}</li>
-                          <li><strong>Available in:</strong> {stone.available_in}</li>
-                          <li><strong>Base color:</strong> {stone.base_color}</li>
-                          <li><strong>Characteristics:</strong> {stone.characteristics}</li>
+                          <li><strong>Categoria:</strong> {stone.category}</li>
+                          <li><strong>Tipo de Rocha:</strong> {stone.rock_type}</li>
+                          <li><strong>Acabamentos Disponíveis:</strong> {stone.finishes}</li>
+                          <li><strong>Disponível em:</strong> {stone.available_in}</li>
+                          <li><strong>Cor Base:</strong> {stone.base_color}</li>
+                          <li><strong>Características:</strong> {stone.characteristics}</li>
                         </ul>
                       </div>
                     </div>
@@ -417,10 +417,10 @@ const StoneViewer = () => {
             {filteredStones.length === 0 && !isLoading && (
               <div className="text-center py-12">
                 <div className="text-gray-500 text-lg mb-4">
-                  No stones found with the applied filters
+                  Nenhuma pedra encontrada com os filtros aplicados
                 </div>
                 <Button variant="outline" onClick={clearFilters}>
-                  Clear Filters
+                  Limpar Filtros
                 </Button>
               </div>
             )}

@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
@@ -39,10 +38,10 @@ const Auth = () => {
 
       if (data.status !== 'aprovado') {
         toast({
-          title: "Access denied",
+          title: "Acesso negado",
           description: data.status === 'pendente' ? 
-            "Your account is pending approval." : 
-            "Your account has been rejected.",
+            "Sua conta está pendente de aprovação." : 
+            "Sua conta foi recusada.",
           variant: "destructive",
         });
         return;
@@ -56,10 +55,10 @@ const Auth = () => {
         status: data.status
       }));
 
-      const userType = data.is_admin ? 'administrator' : 'user';
+      const userType = data.is_admin ? 'administrador' : 'usuário';
       toast({
-        title: "Login successful!",
-        description: `Welcome, ${userType}! Redirecting to catalog.`,
+        title: "Login realizado com sucesso!",
+        description: `Bem-vindo, ${userType}! Redirecionando para catálogo.`,
       });
 
       navigate('/catalog');
@@ -130,22 +129,22 @@ const Auth = () => {
           className="mb-6"
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
-          Back to Home
+          Voltar para início
         </Button>
 
         <div className="flex items-center justify-center">
           <Tabs defaultValue="login" className="w-[400px]">
             <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="login">Sign In</TabsTrigger>
-              <TabsTrigger value="signup">Register</TabsTrigger>
+              <TabsTrigger value="login">Entrar</TabsTrigger>
+              <TabsTrigger value="signup">Registrar-se</TabsTrigger>
             </TabsList>
             
             <TabsContent value="login">
               <Card>
                 <CardHeader>
-                  <CardTitle>Catalog Access</CardTitle>
+                  <CardTitle>Acesso ao Catálogo</CardTitle>
                   <CardDescription>
-                    Sign in with your credentials to manage the stone catalog.
+                    Entre com suas credenciais para gerenciar o catálogo de pedras.
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -153,7 +152,7 @@ const Auth = () => {
                     <div>
                       <Input
                         type="email"
-                        placeholder="Email"
+                        placeholder="E-mail"
                         value={loginData.email}
                         onChange={(e) => setLoginData({ ...loginData, email: e.target.value })}
                         required
@@ -162,14 +161,14 @@ const Auth = () => {
                     <div>
                       <Input
                         type="password"
-                        placeholder="Password"
+                        placeholder="Senha"
                         value={loginData.senha}
                         onChange={(e) => setLoginData({ ...loginData, senha: e.target.value })}
                         required
                       />
                     </div>
                     <Button type="submit" className="w-full" disabled={loading}>
-                      {loading ? "Signing in..." : "Sign In"}
+                      {loading ? "Entrando..." : "Entrar"}
                     </Button>
                   </form>
                 </CardContent>
@@ -179,9 +178,9 @@ const Auth = () => {
             <TabsContent value="signup">
               <Card>
                 <CardHeader>
-                  <CardTitle>Request Access</CardTitle>
+                  <CardTitle>Solicitar Acesso</CardTitle>
                   <CardDescription>
-                    Register to request access to catalog management.
+                    Cadastre-se para solicitar acesso ao gerenciamento do catálogo.
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -189,7 +188,7 @@ const Auth = () => {
                     <div>
                       <Input
                         type="email"
-                        placeholder="Email"
+                        placeholder="E-mail"
                         value={signupData.email}
                         onChange={(e) => setSignupData({ ...signupData, email: e.target.value })}
                         required
@@ -198,21 +197,21 @@ const Auth = () => {
                     <div>
                       <Input
                         type="password"
-                        placeholder="Password (alphanumeric)"
+                        placeholder="Senha (apenas letras e números)"
                         value={signupData.senha}
                         onChange={(e) => setSignupData({ ...signupData, senha: e.target.value })}
                         pattern="[A-Za-z0-9]+"
-                        title="Use only letters and numbers"
+                        title="Use apenas letras e números"
                         required
                       />
                     </div>
                     <Button type="submit" className="w-full" disabled={loading}>
-                      {loading ? "Registering..." : "Request Access"}
+                      {loading ? "Registrando..." : "Solicitar Acesso"}
                     </Button>
                   </form>
                   <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-md">
                     <p className="text-sm text-yellow-800">
-                      <strong>Attention:</strong> After registration, your account will need approval before accessing the catalog.
+                      <strong>Atenção:</strong> Após o cadastro, sua conta precisa ser aprovada antes de acessar o catálogo.
                     </p>
                   </div>
                 </CardContent>
