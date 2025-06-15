@@ -16,11 +16,8 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { LogOut } from 'lucide-react';
 import FilterBar from '@/components/catalog/FilterBar';
-import StoneGrid from '@/components/catalog/StoneGrid';
 import { Filters, Stone } from '@/components/catalog/types';
 import { useImageUpload } from '@/hooks/useImageUpload';
-import { Input } from '@/components/ui/input';
-import { Search } from 'lucide-react';
 
 const fetchStones = async (): Promise<Stone[]> => {
   const { data, error } = await supabase
@@ -119,9 +116,22 @@ const Catalog = () => {
     return searchMatch && categoryMatch && rockTypeMatch && colorMatch;
   });
 
-  const existingCategories = [...new Set(stones.map(stone => stone.category))].filter(Boolean) as string[];
-  const existingRockTypes = [...new Set(stones.map(stone => stone.rock_type))].filter(Boolean) as string[];
-  const existingColors = [...new Set(stones.map(stone => stone.base_color))].filter(Boolean) as string[];
+  // Ordenação crescente (alfabética) dos filtros
+  const existingCategories = [...new Set(stones.map(stone => stone.category))].filter(Boolean).sort() as string[];
+  const existingRockTypes = [...new Set(stones.map(stone => stone.rock_type))].filter(Boolean).sort() as string[];
+  const existingColors = [...new Set(stones.map(stone => stone.base_color))].filter(Boolean).sort() as string[];
+
+  if (isLoading) {
+    return <div className="min-h-screen bg-white flex items-center justify-center">
+      <p>Carregando pedras...</p>
+    </div>;
+  }
+
+  if (isError) {
+    return <div className="min-h-screen bg-white flex items-center justify-center">
+      <p className="text-red-500">Erro ao carregar as pedras. Tente novamente.</p>
+    </div>;
+  }
 
   return (
     <div className="min-h-screen bg-white">
@@ -178,12 +188,26 @@ const Catalog = () => {
           totalCount={stones.length}
         />
 
-        <StoneGrid
-          stones={filteredStones}
-          isLoading={isLoading}
-          isError={isError}
-          getImageUrl={getImageUrl}
-        />
+        {/* Lista simples das pedras por enquanto */}
+        <div className="mt-6">
+          {filteredStones.length === 0 ? (
+            <div className="text-center py-10">
+              <p className="text-gray-700 font-semibold">Nenhuma pedra encontrada.</p>
+              <p className="text-gray-500">Tente ajustar os filtros de pesquisa.</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+              {filteredStones.map(stone => (
+                <div key={stone.id} className="border rounded-lg p-4 bg-white shadow">
+                  <h3 className="font-bold text-lg">{stone.name}</h3>
+                  <p className="text-sm text-gray-600">{stone.category}</p>
+                  <p className="text-sm text-gray-600">{stone.rock_type}</p>
+                  <p className="text-sm text-gray-600">{stone.base_color}</p>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
