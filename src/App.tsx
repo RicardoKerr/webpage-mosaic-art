@@ -9,6 +9,7 @@ import Catalog from "./pages/Catalog";
 import StoneViewer from "./pages/StoneViewer";
 import NotFound from "./pages/NotFound";
 import Auth from "./pages/Auth";
+import User from "./pages/User";
 
 const queryClient = new QueryClient();
 
@@ -23,6 +24,7 @@ const App = () => (
           <Route path="/catalog" element={<Catalog />} />
           <Route path="/viewer" element={<StoneViewer />} />
           <Route path="/auth" element={<Auth />} />
+          <Route path="/user" element={<User />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

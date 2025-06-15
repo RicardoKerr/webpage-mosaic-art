@@ -51,6 +51,36 @@ export type Database = {
         }
         Relationships: []
       }
+      aralogo_auth: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          is_admin: boolean
+          senha: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          is_admin?: boolean
+          senha: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          is_admin?: boolean
+          senha?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       aralogo_changes: {
         Row: {
           changes: Json
@@ -423,6 +453,36 @@ export type Database = {
           name?: string
           updated_at?: string
           website?: string | null
+        }
+        Relationships: []
+      }
+      user_approvals: {
+        Row: {
+          email: string
+          id: string
+          processed_at: string | null
+          processed_by: string | null
+          requested_at: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          email: string
+          id?: string
+          processed_at?: string | null
+          processed_by?: string | null
+          requested_at?: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          email?: string
+          id?: string
+          processed_at?: string | null
+          processed_by?: string | null
+          requested_at?: string
+          status?: string
+          user_id?: string
         }
         Relationships: []
       }

@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Session } from '@supabase/supabase-js';
 import { Button } from '@/components/ui/button';
-import { Plus } from 'lucide-react';
+import { Plus, LogOut } from 'lucide-react';
 import { useImageUpload } from '@/hooks/useImageUpload';
 import { useToast } from '@/hooks/use-toast';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -16,49 +15,43 @@ import StoneCard from '@/components/catalog/StoneCard';
 import StoneForm from '@/components/catalog/StoneForm';
 import ImageZoomModal from '@/components/catalog/ImageZoomModal';
 
+interface AraUser {
+  id: string;
+  email: string;
+  is_admin: boolean;
+  status: string;
+}
+
 const Catalog = () => {
   const navigate = useNavigate();
   const { uploadImage, getImageUrl, isSupabaseConfigured } = useImageUpload();
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const [session, setSession] = useState<Session | null>(null);
+  const [currentUser, setCurrentUser] = useState<AraUser | null>(null);
   const [loadingAuth, setLoadingAuth] = useState(true);
 
   useEffect(() => {
-    const getSession = async () => {
-      const { data: { session: currentSession } } = await supabase.auth.getSession();
-      setSession(currentSession);
-      setLoadingAuth(false);
-      if (!currentSession) {
-        navigate('/auth');
+    const checkAuth = () => {
+      const userData = localStorage.getItem('aralogo_user');
+      if (userData) {
+        const user = JSON.parse(userData);
+        setCurrentUser(user);
+      } else {
+        navigate('/user');
       }
+      setLoadingAuth(false);
     };
 
-    getSession();
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-       if (_event === "SIGNED_OUT") {
-        navigate('/auth');
-      }
-    });
-
-    return () => subscription.unsubscribe();
+    checkAuth();
   }, [navigate]);
 
-  const handleLogout = async () => {
-    const { error } = await supabase.auth.signOut();
-    if (error) {
-      toast({
-        title: "Erro ao sair",
-        description: error.message,
-        variant: "destructive",
-      });
-    } else {
-      toast({
-        title: "Logout realizado com sucesso!",
-      });
-    }
+  const handleLogout = () => {
+    localStorage.removeItem('aralogo_user');
+    setCurrentUser(null);
+    toast({
+      title: "Logout realizado com sucesso!",
+    });
+    navigate('/user');
   };
 
   const { data: fetchedStones, isLoading, isError, error } = useQuery<Stone[]>({
@@ -118,7 +111,7 @@ const Catalog = () => {
       console.log('Mapped stones ready for the app:', mappedStones);
       return mappedStones;
     },
-    enabled: !!session
+    enabled: !!currentUser
   });
 
   const [stones, setStones] = useState<Stone[]>([]);
@@ -202,13 +195,10 @@ const Catalog = () => {
           }
       }
       
-      if (Object.keys(changes).length > 0) {
-        const { data: { session } } = await supabase.auth.getSession();
-        const userEmail = session?.user?.email;
-
+      if (Object.keys(changes).length > 0 && currentUser) {
         const { error: logError } = await supabase.from('aralogo_changes').insert({
             stone_id: Number(id),
-            user_email: userEmail,
+            user_email: currentUser.email,
             changes: changes,
         });
 
@@ -421,6 +411,10 @@ const Catalog = () => {
     );
   }
 
+  if (!currentUser) {
+    return null; // Will redirect to /user
+  }
+
   if (editingStone || isAddingNew) {
     return (
       <StoneForm
@@ -447,7 +441,15 @@ const Catalog = () => {
       <div className="max-w-7xl mx-auto p-6">
         <div className="flex justify-between items-center mb-6">
           <CatalogHeader onAdd={handleAdd} />
-          <Button onClick={handleLogout} variant="outline">Sair</Button>
+          <div className="flex items-center gap-4">
+            <span className="text-sm text-gray-600">
+              Logado como: <strong>{currentUser.email}</strong>
+            </span>
+            <Button onClick={handleLogout} variant="outline">
+              <LogOut className="mr-2 h-4 w-4" />
+              Sair
+            </Button>
+          </div>
         </div>
         
         <FilterBar
