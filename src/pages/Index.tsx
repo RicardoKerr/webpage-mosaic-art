@@ -36,7 +36,7 @@ const Index = () => {
 
       {/* Features Section */}
       {/* REMOVIDO: Seção de funcionalidades administradoras
-      <section className="py-24 bg-white">
+       <section className="py-24 bg-white">
         <div className="mx-auto max-w-7xl px-6 lg:px-8">
           <div className="mx-auto max-w-2xl text-center">
             <h2 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
@@ -90,8 +90,8 @@ const Index = () => {
             </dl>
           </div>
         </div>
-      </section>
-      */}
+       </section>
+       */}
 
       {/* Gallery Section */}
       <section className="py-24 bg-gradient-to-br from-gray-50 to-blue-50">
@@ -110,7 +110,7 @@ const Index = () => {
                 <img src="/lovable-uploads/14b3e1d0-8f04-4112-a939-ede0d6ad3f58.png" alt="Marble with golden veins" className="object-cover w-full h-full hover:scale-110 transition-transform duration-300" />
               </div>
               <CardHeader>
-                <CardTitle className="text-sm">Classic Stone</CardTitle>
+                <CardTitle className="text-sm">Classic Stones</CardTitle>
                 <CardDescription className="text-xs">
                   Natural veins in golden tones
                 </CardDescription>
@@ -122,7 +122,7 @@ const Index = () => {
                 <img src="/lovable-uploads/8c6ffb9e-aae1-4b77-bccf-0d00024f5aff.png" alt="Textured marble" className="object-cover w-full h-full hover:scale-110 transition-transform duration-300" />
               </div>
               <CardHeader>
-                <CardTitle className="text-sm">Textured Stone</CardTitle>
+                <CardTitle className="text-sm">Textured Stones</CardTitle>
                 <CardDescription className="text-xs">
                   Natural surface with relief
                 </CardDescription>
@@ -134,7 +134,7 @@ const Index = () => {
                 <img src="/lovable-uploads/4b24d0c6-d562-46ec-8bc4-7ebfa01a9a49.png" alt="Multicolored marble" className="object-cover w-full h-full hover:scale-110 transition-transform duration-300" />
               </div>
               <CardHeader>
-                <CardTitle className="text-sm">Multicolor Stone</CardTitle>
+                <CardTitle className="text-sm">Multicolor Stones</CardTitle>
                 <CardDescription className="text-xs">
                   Varied and unique tones
                 </CardDescription>
@@ -146,7 +146,7 @@ const Index = () => {
                 <img src="/lovable-uploads/ab956562-5b10-4384-9d89-cf0616450602.png" alt="Green marble" className="object-cover w-full h-full hover:scale-110 transition-transform duration-300" />
               </div>
               <CardHeader>
-                <CardTitle className="text-sm">Green Stone</CardTitle>
+                <CardTitle className="text-sm">Green Stones</CardTitle>
                 <CardDescription className="text-xs">
                   Natural green tones
                 </CardDescription>
