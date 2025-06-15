@@ -30,8 +30,8 @@ const Auth = () => {
 
       if (error || !data) {
         toast({
-          title: "Erro no login",
-          description: "Email ou senha incorretos.",
+          title: "Login error",
+          description: "Incorrect email or password.",
           variant: "destructive",
         });
         return;
@@ -39,16 +39,16 @@ const Auth = () => {
 
       if (data.status !== 'aprovado') {
         toast({
-          title: "Acesso negado",
+          title: "Access denied",
           description: data.status === 'pendente' ? 
-            "Sua conta está pendente de aprovação." : 
-            "Sua conta foi rejeitada.",
+            "Your account is pending approval." : 
+            "Your account has been rejected.",
           variant: "destructive",
         });
         return;
       }
 
-      // Salvar dados do usuário no localStorage
+      // Save user data to localStorage
       localStorage.setItem('aralogo_user', JSON.stringify({
         id: data.id,
         email: data.email,
@@ -56,17 +56,17 @@ const Auth = () => {
         status: data.status
       }));
 
-      const userType = data.is_admin ? 'administrador' : 'usuário';
+      const userType = data.is_admin ? 'administrator' : 'user';
       toast({
-        title: "Login realizado com sucesso!",
-        description: `Bem-vindo, ${userType}! Redirecionando para o catálogo.`,
+        title: "Login successful!",
+        description: `Welcome, ${userType}! Redirecting to catalog.`,
       });
 
       navigate('/catalog');
     } catch (error) {
       toast({
-        title: "Erro",
-        description: "Erro inesperado ao fazer login.",
+        title: "Error",
+        description: "Unexpected error during login.",
         variant: "destructive",
       });
     } finally {
@@ -90,13 +90,13 @@ const Auth = () => {
       if (error) {
         if (error.code === '23505') { // Unique constraint violation
           toast({
-            title: "Erro no cadastro",
-            description: "Este email já está cadastrado.",
+            title: "Registration error",
+            description: "This email is already registered.",
             variant: "destructive",
           });
         } else {
           toast({
-            title: "Erro no cadastro",
+            title: "Registration error",
             description: error.message,
             variant: "destructive",
           });
@@ -105,15 +105,15 @@ const Auth = () => {
       }
 
       toast({
-        title: "Cadastro realizado com sucesso!",
-        description: "Sua conta está pendente de aprovação. Aguarde a aprovação para acessar o catálogo.",
+        title: "Registration successful!",
+        description: "Your account is pending approval. Wait for approval to access the catalog.",
       });
 
       setSignupData({ email: '', senha: '' });
     } catch (error) {
       toast({
-        title: "Erro",
-        description: "Erro inesperado ao fazer cadastro.",
+        title: "Error",
+        description: "Unexpected error during registration.",
         variant: "destructive",
       });
     } finally {
@@ -130,22 +130,22 @@ const Auth = () => {
           className="mb-6"
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
-          Voltar ao Início
+          Back to Home
         </Button>
 
         <div className="flex items-center justify-center">
           <Tabs defaultValue="login" className="w-[400px]">
             <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="login">Entrar</TabsTrigger>
-              <TabsTrigger value="signup">Cadastrar</TabsTrigger>
+              <TabsTrigger value="login">Sign In</TabsTrigger>
+              <TabsTrigger value="signup">Register</TabsTrigger>
             </TabsList>
             
             <TabsContent value="login">
               <Card>
                 <CardHeader>
-                  <CardTitle>Acesso ao Catálogo</CardTitle>
+                  <CardTitle>Catalog Access</CardTitle>
                   <CardDescription>
-                    Entre com suas credenciais para gerenciar o catálogo de pedras.
+                    Sign in with your credentials to manage the stone catalog.
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -162,14 +162,14 @@ const Auth = () => {
                     <div>
                       <Input
                         type="password"
-                        placeholder="Senha"
+                        placeholder="Password"
                         value={loginData.senha}
                         onChange={(e) => setLoginData({ ...loginData, senha: e.target.value })}
                         required
                       />
                     </div>
                     <Button type="submit" className="w-full" disabled={loading}>
-                      {loading ? "Entrando..." : "Entrar"}
+                      {loading ? "Signing in..." : "Sign In"}
                     </Button>
                   </form>
                 </CardContent>
@@ -179,9 +179,9 @@ const Auth = () => {
             <TabsContent value="signup">
               <Card>
                 <CardHeader>
-                  <CardTitle>Solicitar Acesso</CardTitle>
+                  <CardTitle>Request Access</CardTitle>
                   <CardDescription>
-                    Cadastre-se para solicitar acesso ao gerenciamento do catálogo.
+                    Register to request access to catalog management.
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -198,21 +198,21 @@ const Auth = () => {
                     <div>
                       <Input
                         type="password"
-                        placeholder="Senha (alfanumérica)"
+                        placeholder="Password (alphanumeric)"
                         value={signupData.senha}
                         onChange={(e) => setSignupData({ ...signupData, senha: e.target.value })}
                         pattern="[A-Za-z0-9]+"
-                        title="Use apenas letras e números"
+                        title="Use only letters and numbers"
                         required
                       />
                     </div>
                     <Button type="submit" className="w-full" disabled={loading}>
-                      {loading ? "Cadastrando..." : "Solicitar Acesso"}
+                      {loading ? "Registering..." : "Request Access"}
                     </Button>
                   </form>
                   <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-md">
                     <p className="text-sm text-yellow-800">
-                      <strong>Atenção:</strong> Após o cadastro, sua conta precisará ser aprovada antes de acessar o catálogo.
+                      <strong>Attention:</strong> After registration, your account will need approval before accessing the catalog.
                     </p>
                   </div>
                 </CardContent>

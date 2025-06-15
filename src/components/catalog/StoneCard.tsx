@@ -32,7 +32,7 @@ const StoneCard: React.FC<StoneCardProps> = ({
         <h2 className="text-2xl font-bold pb-2 mb-2 border-b border-gray-300 text-gray-800" title={stone.name}>
           {stone.name}
         </h2>
-        <p className="text-sm text-gray-600 mb-4"><strong>Nome do Item:</strong> {stone.name}</p>
+        <p className="text-sm text-gray-600 mb-4"><strong>Item Name:</strong> {stone.name}</p>
 
         <div className="relative group mb-4">
           <img
@@ -74,13 +74,13 @@ const StoneCard: React.FC<StoneCardProps> = ({
             {isUploading ? (
               <>
                 <Upload className="h-4 w-4 animate-spin" />
-                Enviando...
+                Uploading...
               </>
             ) : (
               <>
                 <Upload className="h-4 w-4" />
-                <span className="truncate max-w-[200px]" title={stone.image_filename || 'Enviar nova imagem'}>
-                  {stone.image_filename || 'Enviar Imagem'}
+                <span className="truncate max-w-[200px]" title={stone.image_filename || 'Upload new image'}>
+                  {stone.image_filename || 'Upload Image'}
                 </span>
               </>
             )}
@@ -108,7 +108,7 @@ const StoneCard: React.FC<StoneCardProps> = ({
           className="flex-1 mr-2"
         >
           <Edit className="mr-2 h-4 w-4" />
-          Editar
+          Edit
         </Button>
         <Button 
           variant="destructive"
@@ -117,7 +117,7 @@ const StoneCard: React.FC<StoneCardProps> = ({
           className="flex-1 ml-2"
         >
           <Trash2 className="mr-2 h-4 w-4" />
-          Deletar
+          Delete
         </Button>
       </CardFooter>
     </Card>

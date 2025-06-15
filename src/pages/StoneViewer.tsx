@@ -37,7 +37,7 @@ const fetchStones = async (): Promise<Stone[]> => {
   }
 
   return data
-    .filter(item => item['Nome']) // Garante que a pedra tenha um nome
+    .filter(item => item['Nome']) // Ensures the stone has a name
     .map((item: any, index: number) => ({
     id: item['Nome'] || `stone-${index}`,
     name: item['Nome'] || 'N/A',
@@ -68,16 +68,16 @@ const StoneViewer = () => {
   const [colorFilter, setColorFilter] = useState('all');
   const [zoomedImage, setZoomedImage] = useState<string | null>(null);
   
-  // Paginação
+  // Pagination
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 9;
 
-  // Extrair valores únicos para os filtros, removendo valores nulos ou vazios
+  // Extract unique values for filters, removing null or empty values
   const categories = [...new Set(stones.map(stone => stone.category))].filter(Boolean);
   const rockTypes = [...new Set(stones.map(stone => stone.rock_type))].filter(Boolean);
   const colors = [...new Set(stones.map(stone => stone.base_color))].filter(Boolean);
 
-  // Função para aplicar filtros
+  // Function to apply filters
   const applyFilters = () => {
     let filtered = stones;
 
@@ -101,10 +101,10 @@ const StoneViewer = () => {
     }
 
     setFilteredStones(filtered);
-    setCurrentPage(1); // Reset para primeira página quando filtrar
+    setCurrentPage(1); // Reset to first page when filtering
   };
 
-  // Aplicar filtros sempre que algo mudar
+  // Apply filters whenever something changes
   useEffect(() => {
     if (!isLoading) {
       applyFilters();
@@ -126,7 +126,7 @@ const StoneViewer = () => {
     setZoomedImage(null);
   };
 
-  // Calcular paginação
+  // Calculate pagination
   const totalPages = Math.ceil(filteredStones.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
@@ -158,24 +158,24 @@ const StoneViewer = () => {
             className="mb-4"
           >
             <ArrowLeft className="mr-2 h-4 w-4" />
-            Voltar
+            Back
           </Button>
           <h1 className="text-3xl font-bold text-gray-900 mb-4">
-            Catálogo de Pedras Naturais
+            Natural Stone Catalog
           </h1>
           
-          {/* Seção de Filtros */}
+          {/* Filter Section */}
           <div className="bg-gray-50 p-6 rounded-lg mb-6">
             <div className="flex items-center gap-2 mb-4">
               <Filter className="h-5 w-5 text-gray-600" />
-              <h2 className="text-lg font-semibold text-gray-700">Filtros de Busca</h2>
+              <h2 className="text-lg font-semibold text-gray-700">Search Filters</h2>
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
               <div className="relative">
                 <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                 <Input
-                  placeholder="Buscar por nome..."
+                  placeholder="Search by name..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-10"
@@ -184,10 +184,10 @@ const StoneViewer = () => {
               
               <Select value={categoryFilter} onValueChange={setCategoryFilter}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Categoria" />
+                  <SelectValue placeholder="Category" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Todas as categorias</SelectItem>
+                  <SelectItem value="all">All categories</SelectItem>
                   {categories.map(category => (
                     <SelectItem key={category} value={category}>{category}</SelectItem>
                   ))}
@@ -196,10 +196,10 @@ const StoneViewer = () => {
 
               <Select value={rockTypeFilter} onValueChange={setRockTypeFilter}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Tipo de Rocha" />
+                  <SelectValue placeholder="Rock Type" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Todos os tipos</SelectItem>
+                  <SelectItem value="all">All types</SelectItem>
                   {rockTypes.map(type => (
                     <SelectItem key={type} value={type}>{type}</SelectItem>
                   ))}
@@ -208,10 +208,10 @@ const StoneViewer = () => {
 
               <Select value={colorFilter} onValueChange={setColorFilter}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Cor Base" />
+                  <SelectValue placeholder="Base Color" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Todas as cores</SelectItem>
+                  <SelectItem value="all">All colors</SelectItem>
                   {colors.map(color => (
                     <SelectItem key={color} value={color}>{color}</SelectItem>
                   ))}
@@ -221,10 +221,10 @@ const StoneViewer = () => {
 
             <div className="flex items-center justify-between">
               <p className="text-sm text-gray-600">
-                Mostrando {filteredStones.length > 0 ? startIndex + 1 : 0}-{Math.min(endIndex, filteredStones.length)} de {filteredStones.length} pedras
+                Showing {filteredStones.length > 0 ? startIndex + 1 : 0}-{Math.min(endIndex, filteredStones.length)} of {filteredStones.length} stones
               </p>
               <Button variant="outline" size="sm" onClick={clearFilters}>
-                Limpar Filtros
+                Clear Filters
               </Button>
             </div>
           </div>
@@ -233,23 +233,23 @@ const StoneViewer = () => {
         {isLoading && (
           <div className="flex justify-center items-center py-12">
             <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
-            <p className="ml-4 text-gray-600">Carregando pedras...</p>
+            <p className="ml-4 text-gray-600">Loading stones...</p>
           </div>
         )}
 
         {isError && (
           <div className="text-center py-12 text-red-600">
-            <p>Ocorreu um erro ao carregar o catálogo.</p>
-            <p>Por favor, tente novamente mais tarde.</p>
+            <p>An error occurred while loading the catalog.</p>
+            <p>Please try again later.</p>
           </div>
         )}
 
         {!isLoading && !isError && (
           <>
-            {/* Grid de 3 colunas */}
+            {/* 3-column grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {currentStones.map((stone) => {
-                // Usa a nova coluna Imagem_Name_Site se existir, senão usa o nome da pedra
+                // Uses the new Imagem_Name_Site column if it exists, otherwise uses the stone name
                 const imageIdentifier = stone.image_name_site || stone.name;
                 const imageUrl = getImageUrl(imageIdentifier);
                 console.log('Stone:', stone.name, 'Image identifier:', imageIdentifier, 'Image URL:', imageUrl);
@@ -273,7 +273,7 @@ const StoneViewer = () => {
                           onClick={() => handleImageZoom(imageUrl)}
                           onError={(e) => {
                             const target = e.target as HTMLImageElement;
-                            console.error('Erro ao carregar imagem:', imageUrl, 'para pedra:', stone.name);
+                            console.error('Error loading image:', imageUrl, 'for stone:', stone.name);
                             target.src = '/placeholder.svg';
                           }}
                         />
@@ -304,7 +304,7 @@ const StoneViewer = () => {
               })}
             </div>
 
-            {/* Paginação */}
+            {/* Pagination */}
             {totalPages > 1 && (
               <div className="flex justify-center items-center gap-2 mt-8">
                 <Button
@@ -314,7 +314,7 @@ const StoneViewer = () => {
                   disabled={currentPage === 1}
                 >
                   <ChevronLeft className="h-4 w-4" />
-                  Anterior
+                  Previous
                 </Button>
                 
                 <div className="flex gap-1">
@@ -337,7 +337,7 @@ const StoneViewer = () => {
                   onClick={goToNextPage}
                   disabled={currentPage === totalPages}
                 >
-                  Próxima
+                  Next
                   <ChevronRight className="h-4 w-4" />
                 </Button>
               </div>
@@ -346,17 +346,17 @@ const StoneViewer = () => {
             {filteredStones.length === 0 && !isLoading && (
               <div className="text-center py-12">
                 <div className="text-gray-500 text-lg mb-4">
-                  Nenhuma pedra encontrada com os filtros aplicados
+                  No stones found with the applied filters
                 </div>
                 <Button variant="outline" onClick={clearFilters}>
-                  Limpar Filtros
+                  Clear Filters
                 </Button>
               </div>
             )}
           </>
         )}
 
-        {/* Modal de Zoom - 80% da tela */}
+        {/* Zoom Modal - 80% of screen */}
         {zoomedImage && (
           <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50" onClick={closeZoom}>
             <div className="relative w-[80vw] h-[80vh] p-4">

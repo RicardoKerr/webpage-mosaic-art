@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { ArrowRight, Code, Laptop, Users, Zap, Database, Upload, Eye } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -15,12 +16,12 @@ const Index = () => {
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div className="animate-fade-in">
               <h1 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-6xl lg:text-7xl">
-                Catálogo de
-                <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent"> Pedras Naturais</span>
+                Natural Stone
+                <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent"> Catalog</span>
               </h1>
               <p className="mt-6 text-lg leading-8 text-gray-600 max-w-xl">
-                Sistema completo para gerenciar seu catálogo de pedras naturais com upload em lote,
-                banco de dados integrado e visualização profissional.
+                Complete system to manage your natural stone catalog with bulk upload,
+                integrated database and professional visualization.
               </p>
               <div className="mt-10 flex items-center gap-x-6">
                 <Button 
@@ -28,23 +29,23 @@ const Index = () => {
                   className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 transition-all duration-300 transform hover:scale-105"
                   onClick={() => navigate('/viewer')}
                 >
-                  Ver Catálogo
+                  View Catalog
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
                 <Button 
                   variant="outline" 
                   size="lg" 
                   className="hover:bg-gray-50 transition-all duration-300"
-                  onClick={() => navigate('/user')}
+                  onClick={() => navigate('/auth')}
                 >
-                  Acesso de Usuário
+                  User Access
                 </Button>
               </div>
             </div>
             <div className="relative">
               <img
                 src="/lovable-uploads/14b3e1d0-8f04-4112-a939-ede0d6ad3f58.png"
-                alt="Textura de mármore natural"
+                alt="Natural marble texture"
                 className="rounded-2xl shadow-2xl transform hover:scale-105 transition-transform duration-300"
               />
               <div className="absolute -bottom-6 -right-6 w-24 h-24 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full opacity-20 blur-xl"></div>
@@ -58,10 +59,10 @@ const Index = () => {
         <div className="mx-auto max-w-7xl px-6 lg:px-8">
           <div className="mx-auto max-w-2xl text-center">
             <h2 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
-              Funcionalidades Principais
+              Main Features
             </h2>
             <p className="mt-6 text-lg leading-8 text-gray-600">
-              Tudo que você precisa para gerenciar seu catálogo de pedras naturais
+              Everything you need to manage your natural stone catalog
             </p>
           </div>
           <div className="mx-auto mt-16 max-w-2xl sm:mt-20 lg:mt-24 lg:max-w-none">
@@ -71,11 +72,11 @@ const Index = () => {
                   <Upload className="h-6 w-6 text-white" />
                 </div>
                 <dt className="text-xl font-semibold leading-7 text-gray-900">
-                  Upload em Lote
+                  Bulk Upload
                 </dt>
                 <dd className="mt-4 flex flex-auto flex-col text-base leading-7 text-gray-600">
                   <p className="flex-auto">
-                    Faça upload de centenas de imagens de uma só vez. Sistema suporta múltiplos formatos.
+                    Upload hundreds of images at once. System supports multiple formats.
                   </p>
                 </dd>
               </div>
@@ -84,11 +85,11 @@ const Index = () => {
                   <Database className="h-6 w-6 text-white" />
                 </div>
                 <dt className="text-xl font-semibold leading-7 text-gray-900">
-                  Banco de Dados
+                  Database
                 </dt>
                 <dd className="mt-4 flex flex-auto flex-col text-base leading-7 text-gray-600">
                   <p className="flex-auto">
-                    Armazene todas as especificações técnicas com integração Supabase completa.
+                    Store all technical specifications with complete Supabase integration.
                   </p>
                 </dd>
               </div>
@@ -97,11 +98,11 @@ const Index = () => {
                   <Eye className="h-6 w-6 text-white" />
                 </div>
                 <dt className="text-xl font-semibold leading-7 text-gray-900">
-                  Visualização Profissional
+                  Professional Visualization
                 </dt>
                 <dd className="mt-4 flex flex-auto flex-col text-base leading-7 text-gray-600">
                   <p className="flex-auto">
-                    Interface elegante para apresentar seu catálogo aos clientes.
+                    Elegant interface to present your catalog to clients.
                   </p>
                 </dd>
               </div>
@@ -115,10 +116,10 @@ const Index = () => {
         <div className="mx-auto max-w-7xl px-6 lg:px-8">
           <div className="mx-auto max-w-2xl text-center mb-16">
             <h2 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
-              Exemplos de Pedras Naturais
+              Natural Stone Examples
             </h2>
             <p className="mt-6 text-lg leading-8 text-gray-600">
-              Veja alguns exemplos das texturas que você pode catalogar
+              See some examples of textures you can catalog
             </p>
           </div>
           <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4">
@@ -126,14 +127,14 @@ const Index = () => {
               <div className="aspect-square overflow-hidden">
                 <img
                   src="/lovable-uploads/14b3e1d0-8f04-4112-a939-ede0d6ad3f58.png"
-                  alt="Mármore com veios dourados"
+                  alt="Marble with golden veins"
                   className="object-cover w-full h-full hover:scale-110 transition-transform duration-300"
                 />
               </div>
               <CardHeader>
-                <CardTitle className="text-sm">Mármore Clássico</CardTitle>
+                <CardTitle className="text-sm">Classic Marble</CardTitle>
                 <CardDescription className="text-xs">
-                  Veios naturais em tons dourados
+                  Natural veins in golden tones
                 </CardDescription>
               </CardHeader>
             </Card>
@@ -142,14 +143,14 @@ const Index = () => {
               <div className="aspect-square overflow-hidden">
                 <img
                   src="/lovable-uploads/8c6ffb9e-aae1-4b77-bccf-0d00024f5aff.png"
-                  alt="Mármore texturizado"
+                  alt="Textured marble"
                   className="object-cover w-full h-full hover:scale-110 transition-transform duration-300"
                 />
               </div>
               <CardHeader>
-                <CardTitle className="text-sm">Mármore Texturizado</CardTitle>
+                <CardTitle className="text-sm">Textured Marble</CardTitle>
                 <CardDescription className="text-xs">
-                  Superfície natural com relevo
+                  Natural surface with relief
                 </CardDescription>
               </CardHeader>
             </Card>
@@ -158,14 +159,14 @@ const Index = () => {
               <div className="aspect-square overflow-hidden">
                 <img
                   src="/lovable-uploads/4b24d0c6-d562-46ec-8bc4-7ebfa01a9a49.png"
-                  alt="Mármore multicolorido"
+                  alt="Multicolored marble"
                   className="object-cover w-full h-full hover:scale-110 transition-transform duration-300"
                 />
               </div>
               <CardHeader>
-                <CardTitle className="text-sm">Mármore Multicolor</CardTitle>
+                <CardTitle className="text-sm">Multicolor Marble</CardTitle>
                 <CardDescription className="text-xs">
-                  Tons variados e únicos
+                  Varied and unique tones
                 </CardDescription>
               </CardHeader>
             </Card>
@@ -174,14 +175,14 @@ const Index = () => {
               <div className="aspect-square overflow-hidden">
                 <img
                   src="/lovable-uploads/ab956562-5b10-4384-9d89-cf0616450602.png"
-                  alt="Mármore verde"
+                  alt="Green marble"
                   className="object-cover w-full h-full hover:scale-110 transition-transform duration-300"
                 />
               </div>
               <CardHeader>
-                <CardTitle className="text-sm">Mármore Verde</CardTitle>
+                <CardTitle className="text-sm">Green Marble</CardTitle>
                 <CardDescription className="text-xs">
-                  Tons verdes naturais
+                  Natural green tones
                 </CardDescription>
               </CardHeader>
             </Card>
@@ -193,10 +194,10 @@ const Index = () => {
       <section className="py-24 bg-gradient-to-r from-blue-600 to-purple-600">
         <div className="mx-auto max-w-7xl px-6 lg:px-8 text-center">
           <h2 className="text-3xl font-bold tracking-tight text-white sm:text-4xl">
-            Pronto para visualizar nosso catálogo?
+            Ready to view our catalog?
           </h2>
           <p className="mt-6 text-lg leading-8 text-blue-100 max-w-2xl mx-auto">
-            Explore nossa coleção completa de pedras naturais.
+            Explore our complete collection of natural stones.
           </p>
           <div className="mt-10 flex items-center justify-center gap-x-6">
             <Button 
@@ -206,15 +207,15 @@ const Index = () => {
               onClick={() => navigate('/viewer')}
             >
               <Eye className="mr-2 h-4 w-4" />
-              Ver Catálogo
+              View Catalog
             </Button>
             <Button 
               size="lg" 
               variant="outline" 
               className="border-white text-white hover:bg-white hover:text-blue-600 transition-all duration-300"
-              onClick={() => navigate('/user')}
+              onClick={() => navigate('/auth')}
             >
-              Acesso de Usuário
+              User Access
             </Button>
           </div>
         </div>
@@ -229,30 +230,30 @@ const Index = () => {
                 TechSolutions
               </h3>
               <p className="mt-4 text-gray-400 max-w-md">
-                Transformando ideias em soluções digitais inovadoras. 
-                Sua parceira de confiança no mundo da tecnologia.
+                Transforming ideas into innovative digital solutions. 
+                Your trusted partner in the technology world.
               </p>
             </div>
             <div>
-              <h4 className="text-lg font-semibold mb-4">Serviços</h4>
+              <h4 className="text-lg font-semibold mb-4">Services</h4>
               <ul className="space-y-2 text-gray-400">
-                <li className="hover:text-white transition-colors cursor-pointer">Desenvolvimento Web</li>
-                <li className="hover:text-white transition-colors cursor-pointer">Apps Mobile</li>
-                <li className="hover:text-white transition-colors cursor-pointer">Consultoria Digital</li>
-                <li className="hover:text-white transition-colors cursor-pointer">Design UX/UI</li>
+                <li className="hover:text-white transition-colors cursor-pointer">Web Development</li>
+                <li className="hover:text-white transition-colors cursor-pointer">Mobile Apps</li>
+                <li className="hover:text-white transition-colors cursor-pointer">Digital Consulting</li>
+                <li className="hover:text-white transition-colors cursor-pointer">UX/UI Design</li>
               </ul>
             </div>
             <div>
-              <h4 className="text-lg font-semibold mb-4">Contato</h4>
+              <h4 className="text-lg font-semibold mb-4">Contact</h4>
               <ul className="space-y-2 text-gray-400">
-                <li className="hover:text-white transition-colors cursor-pointer">contato@techsolutions.com</li>
+                <li className="hover:text-white transition-colors cursor-pointer">contact@techsolutions.com</li>
                 <li className="hover:text-white transition-colors cursor-pointer">+55 11 9999-9999</li>
                 <li className="hover:text-white transition-colors cursor-pointer">São Paulo, SP</li>
               </ul>
             </div>
           </div>
           <div className="mt-8 pt-8 border-t border-gray-800 text-center text-gray-400">
-            <p>&copy; 2024 TechSolutions. Todos os direitos reservados.</p>
+            <p>&copy; 2024 TechSolutions. All rights reserved.</p>
           </div>
         </div>
       </footer>

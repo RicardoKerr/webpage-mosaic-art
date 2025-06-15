@@ -41,7 +41,7 @@ const StoneForm: React.FC<StoneFormProps> = ({
   existingRockTypes,
   existingColors,
 }) => {
-  const title = isAddingNew ? 'Adicionar Nova Pedra' : 'Editar Pedra';
+  const title = isAddingNew ? 'Add New Stone' : 'Edit Stone';
   
   return (
     <div className="min-h-screen bg-white">
@@ -52,7 +52,7 @@ const StoneForm: React.FC<StoneFormProps> = ({
           className="mb-4"
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
-          Voltar
+          Back
         </Button>
         
         <h1 className="text-3xl font-bold text-gray-900 mb-6">{title}</h1>
@@ -61,21 +61,21 @@ const StoneForm: React.FC<StoneFormProps> = ({
           <div className={`grid grid-cols-1 ${!isAddingNew ? 'md:grid-cols-2' : ''} gap-6`}>
             <div className="space-y-4">
               <div>
-                <Label htmlFor="name">Nome</Label>
+                <Label htmlFor="name">Name</Label>
                 <Input
                   id="name"
                   type="text"
                   value={formData.name}
                   onChange={(e) => onInputChange('name', e.target.value)}
-                  placeholder="Nome da pedra"
+                  placeholder="Stone name"
                 />
               </div>
 
               <div>
-                <Label htmlFor="category">Categoria</Label>
+                <Label htmlFor="category">Category</Label>
                 <Select value={formData.category} onValueChange={(value) => onInputChange('category', value)}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Selecione a categoria" />
+                    <SelectValue placeholder="Select category" />
                   </SelectTrigger>
                   <SelectContent>
                     {existingCategories.map(category => (
@@ -86,10 +86,10 @@ const StoneForm: React.FC<StoneFormProps> = ({
               </div>
 
               <div>
-                <Label htmlFor="rock_type">Tipo de Rocha</Label>
+                <Label htmlFor="rock_type">Rock Type</Label>
                 <Select value={formData.rock_type} onValueChange={(value) => onInputChange('rock_type', value)}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Selecione o tipo de rocha" />
+                    <SelectValue placeholder="Select rock type" />
                   </SelectTrigger>
                   <SelectContent>
                     {existingRockTypes.map(rockType => (
@@ -100,32 +100,32 @@ const StoneForm: React.FC<StoneFormProps> = ({
               </div>
 
               <div>
-                <Label htmlFor="finishes">Acabamentos</Label>
+                <Label htmlFor="finishes">Finishes</Label>
                 <Input
                   id="finishes"
                   type="text"
                   value={formData.finishes}
                   onChange={(e) => onInputChange('finishes', e.target.value)}
-                  placeholder="Acabamentos disponíveis"
+                  placeholder="Available finishes"
                 />
               </div>
 
               <div>
-                <Label htmlFor="available_in">Disponível em</Label>
+                <Label htmlFor="available_in">Available in</Label>
                 <Input
                   id="available_in"
                   type="text"
                   value={formData.available_in}
                   onChange={(e) => onInputChange('available_in', e.target.value)}
-                  placeholder="Formatos disponíveis"
+                  placeholder="Available formats"
                 />
               </div>
               
               <div>
-                <Label htmlFor="base_color">Cor Base</Label>
+                <Label htmlFor="base_color">Base Color</Label>
                 <Select value={formData.base_color} onValueChange={(value) => onInputChange('base_color', value)}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Selecione a cor base" />
+                    <SelectValue placeholder="Select base color" />
                   </SelectTrigger>
                   <SelectContent>
                     {existingColors.map(color => (
@@ -136,12 +136,12 @@ const StoneForm: React.FC<StoneFormProps> = ({
               </div>
 
               <div>
-                <Label htmlFor="characteristics">Características</Label>
+                <Label htmlFor="characteristics">Characteristics</Label>
                 <Textarea
                   id="characteristics"
                   value={formData.characteristics}
                   onChange={(e) => onInputChange('characteristics', e.target.value)}
-                  placeholder="Descreva as características da pedra"
+                  placeholder="Describe the stone characteristics"
                   className="min-h-[100px]"
                 />
               </div>
@@ -150,7 +150,7 @@ const StoneForm: React.FC<StoneFormProps> = ({
             {!isAddingNew && editingStone && (
               <div className="space-y-4">
                 <div>
-                  <Label>Imagem Atual</Label>
+                  <Label>Current Image</Label>
                   <div className="relative">
                     <img 
                       src={getImageUrl(editingStone.image_filename)}
@@ -170,7 +170,7 @@ const StoneForm: React.FC<StoneFormProps> = ({
                 </div>
 
                 <div>
-                  <Label htmlFor="image_upload">Substituir Imagem</Label>
+                  <Label htmlFor="image_upload">Replace Image</Label>
                   <div className="flex items-center gap-2">
                     <Input
                       id="image_upload"
@@ -196,10 +196,10 @@ const StoneForm: React.FC<StoneFormProps> = ({
           <div className="flex gap-2 mt-6">
             <Button onClick={onSave} disabled={isSaving}>
               {isSaving && <Upload className="mr-2 h-4 w-4 animate-spin" />}
-              {isAddingNew ? 'Adicionar' : 'Salvar'}
+              {isAddingNew ? 'Add' : 'Save'}
             </Button>
             <Button variant="outline" onClick={onCancel}>
-              Cancelar
+              Cancel
             </Button>
           </div>
         </div>

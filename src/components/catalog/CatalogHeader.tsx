@@ -19,15 +19,15 @@ const CatalogHeader: React.FC<CatalogHeaderProps> = ({ onAdd }) => {
         className="mb-4"
       >
         <ArrowLeft className="mr-2 h-4 w-4" />
-        Voltar
+        Back
       </Button>
       <h1 className="text-3xl font-bold text-gray-900 mb-4">
-        Catálogo de Pedras Naturais
+        Natural Stone Catalog
       </h1>
       <div className="flex flex-wrap gap-4 mb-6">
         <Button onClick={onAdd}>
           <Plus className="mr-2 h-4 w-4" />
-          Adicionar Pedra
+          Add Stone
         </Button>
       </div>
     </div>
