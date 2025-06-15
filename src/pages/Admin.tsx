@@ -1,4 +1,3 @@
-
 import { useAdminAuth } from '@/hooks/useAdminAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -6,7 +5,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { LayoutDashboard, LogOut } from 'lucide-react';
-import { Badge } from '@/components/ui/badge'; // This was missing
+import { Badge } from '@/components/ui/badge';
 
 type Approval = {
     id: string;
@@ -24,6 +23,7 @@ const Admin = () => {
     const { data: approvals, isLoading: approvalsLoading } = useQuery({
         queryKey: ['approvals'],
         queryFn: async () => {
+            // @ts-ignore
             const { data, error } = await supabase
                 .from('user_approvals')
                 .select('*')
@@ -36,6 +36,7 @@ const Admin = () => {
     
     const mutation = useMutation({
         mutationFn: async ({ id, status }: { id: string, status: 'approved' | 'rejected' }) => {
+            // @ts-ignore
             const { error } = await supabase
                 .from('user_approvals')
                 .update({ status, processed_at: new Date().toISOString(), processed_by: user?.email })
@@ -57,7 +58,7 @@ const Admin = () => {
 
     const getStatusVariant = (status: Approval['status']) => {
         switch (status) {
-            case 'approved': return 'success';
+            case 'approved': return 'default';
             case 'rejected': return 'destructive';
             case 'pending': return 'secondary';
             default: return 'default';

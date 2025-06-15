@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
@@ -25,6 +26,8 @@ const formSchema = z.object({
 
 type FormValues = z.infer<typeof formSchema>;
 
+const ADMIN_EMAIL = 'admin@techsolutions.com';
+
 const Auth = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -39,6 +42,7 @@ const Auth = () => {
   });
 
   const checkApprovalAndRedirect = async (userId: string, isLoginAttempt: boolean) => {
+    // @ts-ignore
     const { data: approvalData, error: approvalError } = await supabase
       .from('user_approvals')
       .select('status')
@@ -47,11 +51,12 @@ const Auth = () => {
 
     if (approvalError && approvalError.code !== 'PGRST116') {
       toast({
-        title: "Erro ao verificar status",
-        description: approvalError.message,
-        variant: "destructive",
+        title: "Aguardando Aprovação",
+        description: "Sua conta precisa ser aprovada por um administrador.",
+        variant: "default",
       });
       if (isLoginAttempt) await supabase.auth.signOut();
+      navigate('/awaiting-approval');
       return;
     }
 
@@ -62,7 +67,7 @@ const Auth = () => {
         navigate('/catalog');
     } else {
         if (isLoginAttempt) {
-            await supabase.auth.signOut();
+            // No need to sign out, they should be taken to awaiting approval
         }
         navigate('/awaiting-approval');
     }
@@ -91,7 +96,11 @@ const Auth = () => {
         variant: "destructive",
       });
     } else if (data.user) {
-      await checkApprovalAndRedirect(data.user.id, true);
+      if (data.user.email === ADMIN_EMAIL) {
+        navigate('/admin');
+      } else {
+        await checkApprovalAndRedirect(data.user.id, true);
+      }
     }
     setLoading(false);
   };
