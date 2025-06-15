@@ -9,6 +9,9 @@ import Catalog from "./pages/Catalog";
 import StoneViewer from "./pages/StoneViewer";
 import NotFound from "./pages/NotFound";
 import Auth from "./pages/Auth";
+import Admin from "./pages/Admin";
+import AwaitingApproval from "./pages/AwaitingApproval";
+import ProtectedRoute from "./components/auth/ProtectedRoute";
 
 const queryClient = new QueryClient();
 
@@ -20,9 +23,15 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
-          <Route path="/catalog" element={<Catalog />} />
+          <Route path="/catalog" element={
+            <ProtectedRoute>
+              <Catalog />
+            </ProtectedRoute>
+          } />
           <Route path="/viewer" element={<StoneViewer />} />
           <Route path="/auth" element={<Auth />} />
+          <Route path="/admin" element={<Admin />} />
+          <Route path="/awaiting-approval" element={<AwaitingApproval />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

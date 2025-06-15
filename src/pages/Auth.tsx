@@ -1,5 +1,4 @@
-
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -39,21 +38,60 @@ const Auth = () => {
     },
   });
 
+  const checkApprovalAndRedirect = async (userId: string, isLoginAttempt: boolean) => {
+    const { data: approvalData, error: approvalError } = await supabase
+      .from('user_approvals')
+      .select('status')
+      .eq('user_id', userId)
+      .single();
+
+    if (approvalError && approvalError.code !== 'PGRST116') {
+      toast({
+        title: "Erro ao verificar status",
+        description: approvalError.message,
+        variant: "destructive",
+      });
+      if (isLoginAttempt) await supabase.auth.signOut();
+      return;
+    }
+
+    if (approvalData?.status === 'approved') {
+        if (isLoginAttempt) {
+             toast({ title: "Login bem-sucedido!", description: "Redirecionando para o catálogo." });
+        }
+        navigate('/catalog');
+    } else {
+        if (isLoginAttempt) {
+            await supabase.auth.signOut();
+        }
+        navigate('/awaiting-approval');
+    }
+  }
+
+  // Redirect if user is already logged in from a previous session
+  useEffect(() => {
+    const { data: authListener } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        // This handles redirect after email confirmation
+        if (event === "SIGNED_IN" && session) {
+          checkApprovalAndRedirect(session.user.id, false);
+        }
+      }
+    );
+    return () => authListener.subscription.unsubscribe();
+  }, [navigate]);
+
   const handleLogin: SubmitHandler<FormValues> = async ({ email, password }) => {
     setLoading(true);
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) {
       toast({
         title: "Erro no login",
         description: "Verifique seu e-mail e senha.",
         variant: "destructive",
       });
-    } else {
-      toast({
-        title: "Login bem-sucedido!",
-        description: "Redirecionando para o catálogo.",
-      });
-      navigate('/catalog');
+    } else if (data.user) {
+      await checkApprovalAndRedirect(data.user.id, true);
     }
     setLoading(false);
   };
@@ -64,7 +102,7 @@ const Auth = () => {
       email,
       password,
       options: {
-        emailRedirectTo: `${window.location.origin}/catalog`,
+        emailRedirectTo: `${window.location.origin}/auth`,
       },
     });
     if (error) {
@@ -76,9 +114,10 @@ const Auth = () => {
     } else {
       toast({
         title: "Cadastro realizado com sucesso!",
-        description: "Verifique seu email para confirmar a conta.",
+        description: "Verifique seu email para confirmar a conta. Sua conta aguarda aprovação do administrador.",
       });
       form.reset();
+      navigate('/awaiting-approval');
     }
     setLoading(false);
   };
