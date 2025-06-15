@@ -16,9 +16,7 @@ const Index = () => {
                 <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent"> Catalog</span>
               </h1>
               <p className="mt-6 text-lg leading-8 text-gray-600 max-w-xl">
-                Complete system to manage your natural stone catalog with bulk upload,
-                integrated database and professional visualization.
-              </p>
+            </p>
               <div className="mt-10 flex items-center gap-x-6">
                 <Button size="lg" className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 transition-all duration-300 transform hover:scale-105" onClick={() => navigate('/viewer')}>
                   View Catalog
