@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Session } from '@supabase/supabase-js';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
 import { useImageUpload } from '@/hooks/useImageUpload';
@@ -15,9 +17,49 @@ import StoneForm from '@/components/catalog/StoneForm';
 import ImageZoomModal from '@/components/catalog/ImageZoomModal';
 
 const Catalog = () => {
+  const navigate = useNavigate();
   const { uploadImage, getImageUrl, isSupabaseConfigured } = useImageUpload();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [session, setSession] = useState<Session | null>(null);
+  const [loadingAuth, setLoadingAuth] = useState(true);
+
+  useEffect(() => {
+    const getSession = async () => {
+      const { data: { session: currentSession } } = await supabase.auth.getSession();
+      setSession(currentSession);
+      setLoadingAuth(false);
+      if (!currentSession) {
+        navigate('/auth');
+      }
+    };
+
+    getSession();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+       if (_event === "SIGNED_OUT") {
+        navigate('/auth');
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, [navigate]);
+
+  const handleLogout = async () => {
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      toast({
+        title: "Erro ao sair",
+        description: error.message,
+        variant: "destructive",
+      });
+    } else {
+      toast({
+        title: "Logout realizado com sucesso!",
+      });
+    }
+  };
 
   const { data: fetchedStones, isLoading, isError, error } = useQuery<Stone[]>({
     queryKey: ['stones'],
@@ -75,7 +117,8 @@ const Catalog = () => {
 
       console.log('Mapped stones ready for the app:', mappedStones);
       return mappedStones;
-    }
+    },
+    enabled: !!session
   });
 
   const [stones, setStones] = useState<Stone[]>([]);
@@ -330,6 +373,17 @@ const Catalog = () => {
     setZoomedImage(null);
   };
 
+  if (loadingAuth) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <p className="text-lg">Carregando...</p>
+          <p className="text-sm text-gray-500">Verificando autenticação</p>
+        </div>
+      </div>
+    );
+  }
+
   if (editingStone || isAddingNew) {
     return (
       <StoneForm
@@ -354,7 +408,10 @@ const Catalog = () => {
   return (
     <div className="min-h-screen bg-white">
       <div className="max-w-7xl mx-auto p-6">
-        <CatalogHeader onAdd={handleAdd} />
+        <div className="flex justify-between items-center mb-6">
+          <CatalogHeader onAdd={handleAdd} />
+          <Button onClick={handleLogout} variant="outline">Sair</Button>
+        </div>
         
         <FilterBar
           filters={filters}
