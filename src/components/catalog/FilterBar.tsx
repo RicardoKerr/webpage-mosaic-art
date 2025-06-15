@@ -51,7 +51,7 @@ const FilterBar: React.FC<FilterBarProps> = ({
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Todas as categorias</SelectItem>
-            {existingCategories.map(category => (
+            {[...existingCategories].sort((a, b) => a.localeCompare(b)).map(category => (
               <SelectItem key={category} value={category}>{category}</SelectItem>
             ))}
           </SelectContent>
@@ -63,7 +63,7 @@ const FilterBar: React.FC<FilterBarProps> = ({
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Todos os tipos</SelectItem>
-            {existingRockTypes.map(type => (
+            {[...existingRockTypes].sort((a, b) => a.localeCompare(b)).map(type => (
               <SelectItem key={type} value={type}>{type}</SelectItem>
             ))}
           </SelectContent>
@@ -75,7 +75,7 @@ const FilterBar: React.FC<FilterBarProps> = ({
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Todas as cores</SelectItem>
-            {existingColors.map(color => (
+            {[...existingColors].sort((a, b) => a.localeCompare(b)).map(color => (
               <SelectItem key={color} value={color}>{color}</SelectItem>
             ))}
           </SelectContent>

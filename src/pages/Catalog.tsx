@@ -249,9 +249,15 @@ const Catalog = () => {
     }
   });
 
-  const existingCategories = [...new Set(stones.map(stone => stone.category))].filter(Boolean);
-  const existingRockTypes = [...new Set(stones.map(stone => stone.rock_type))].filter(Boolean);
-  const existingColors = [...new Set(stones.map(stone => stone.base_color))].filter(Boolean);
+  const existingCategories = [...new Set(stones.map(stone => stone.category))]
+    .filter(Boolean)
+    .sort((a, b) => a.localeCompare(b));
+  const existingRockTypes = [...new Set(stones.map(stone => stone.rock_type))]
+    .filter(Boolean)
+    .sort((a, b) => a.localeCompare(b));
+  const existingColors = [...new Set(stones.map(stone => stone.base_color))]
+    .filter(Boolean)
+    .sort((a, b) => a.localeCompare(b));
 
   const [formData, setFormData] = useState<StoneFormData>({
     name: '',
