@@ -42,14 +42,13 @@ const Auth = () => {
   });
 
   const checkApprovalAndRedirect = async (userId: string, isLoginAttempt: boolean) => {
-    // @ts-ignore - This table is not in the generated types yet because the migration has not been run
     const { data: approvalData, error: approvalError } = await supabase
-      .from('user_approvals')
+      .from<any>('user_approvals')
       .select('status')
       .eq('user_id', userId)
-      .single();
+      .maybeSingle();
 
-    if (approvalError && approvalError.code !== 'PGRST116') {
+    if (approvalError) {
       toast({
         title: "Aguardando Aprovação",
         description: "Sua conta precisa ser aprovada por um administrador.",
@@ -60,7 +59,7 @@ const Auth = () => {
       return;
     }
 
-    if (approvalData?.status === 'approved') {
+    if (approvalData && approvalData.status === 'approved') {
         if (isLoginAttempt) {
              toast({ title: "Login bem-sucedido!", description: "Redirecionando para o catálogo." });
         }
@@ -74,11 +73,9 @@ const Auth = () => {
     }
   }
 
-  // Redirect if user is already logged in from a previous session
   useEffect(() => {
     const { data: authListener } = supabase.auth.onAuthStateChange(
       (event, session) => {
-        // This handles redirect after email confirmation
         if (event === "SIGNED_IN" && session) {
           if (session.user.email === ADMIN_EMAIL) {
             navigate('/admin');

@@ -29,19 +29,18 @@ export const useUserAuth = () => {
         return;
       }
 
-      // @ts-ignore - This table is not in the generated types yet because the migration has not been run
+      // Consulta genérica para evitar erro de tipagem até o types ser atualizado
       const { data: approvalData, error } = await supabase
-        .from('user_approvals')
+        .from<any>('user_approvals')
         .select('status')
         .eq('user_id', session.user.id)
-        .single();
+        .maybeSingle();
       
-      if (error && error.code !== 'PGRST116') {
-          // This will catch if the table doesn't exist yet for non-admin users
+      if (error) {
           console.error("Error checking approval status", error);
           toast({ title: 'Aguardando Aprovação', description: 'Sua conta precisa ser aprovada por um administrador.', variant: 'default' });
           navigate('/awaiting-approval');
-      } else if (approvalData?.status === 'approved') {
+      } else if (approvalData && approvalData.status === 'approved') {
         setUser(session.user);
       } else {
         navigate('/awaiting-approval');

@@ -21,25 +21,24 @@ const Admin = () => {
     const queryClient = useQueryClient();
     const { toast } = useToast();
 
+    // Consulta genérica para evitar problemas de tipagem
     const { data: approvals, isLoading: approvalsLoading } = useQuery({
         queryKey: ['approvals'],
         queryFn: async () => {
-            // @ts-ignore - This table is not in the generated types yet because the migration has not been run
             const { data, error } = await supabase
-                .from('user_approvals')
+                .from<any>('user_approvals')
                 .select('*')
                 .order('requested_at', { ascending: true });
             if (error) throw new Error(error.message);
-            return data as unknown as Approval[];
+            return data as Approval[];
         },
         enabled: !!user,
     });
     
     const mutation = useMutation({
         mutationFn: async ({ id, status }: { id: string, status: 'approved' | 'rejected' }) => {
-            // @ts-ignore - This table is not in the generated types yet because the migration has not been run
             const { error } = await supabase
-                .from('user_approvals')
+                .from<any>('user_approvals')
                 .update({ status, processed_at: new Date().toISOString(), processed_by: user?.email })
                 .eq('id', id);
             if (error) throw new Error(error.message);
@@ -48,7 +47,7 @@ const Admin = () => {
             queryClient.invalidateQueries({ queryKey: ['approvals'] });
             toast({ title: 'Sucesso', description: 'Status do usuário atualizado.' });
         },
-        onError: (error) => {
+        onError: (error: any) => {
             toast({ title: 'Erro', description: error.message, variant: 'destructive' });
         }
     });
