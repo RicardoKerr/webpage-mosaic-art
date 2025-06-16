@@ -12,7 +12,7 @@ const Index = () => {
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div className="animate-fade-in">
               <h1 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-6xl lg:text-7xl">
-                Natural Stone
+                Natural Stones
                 <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent"> Catalog</span>
               </h1>
               <p className="mt-6 text-lg leading-8 text-gray-600 max-w-xl">
