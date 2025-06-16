@@ -95,9 +95,7 @@ const Index = () => {
       <section className="py-24 bg-gradient-to-br from-gray-50 to-blue-50">
         <div className="mx-auto max-w-7xl px-6 lg:px-8">
           <div className="mx-auto max-w-2xl text-center mb-16">
-            <h2 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
-              Natural Stone Examples
-            </h2>
+            <h2 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">Natural Stones Examples</h2>
             <p className="mt-6 text-lg leading-8 text-gray-600">
               See some examples of textures you can catalog
             </p>
