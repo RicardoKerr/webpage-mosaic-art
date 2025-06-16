@@ -121,6 +121,7 @@ export type Database = {
           Categoria: string | null
           "Cor Base": string | null
           "Disponível em": string | null
+          Enable_On_Off: boolean
           id: number
           Imagem_Name_Site: string | null
           Nome: string | null
@@ -133,6 +134,7 @@ export type Database = {
           Categoria?: string | null
           "Cor Base"?: string | null
           "Disponível em"?: string | null
+          Enable_On_Off?: boolean
           id?: number
           Imagem_Name_Site?: string | null
           Nome?: string | null
@@ -145,6 +147,7 @@ export type Database = {
           Categoria?: string | null
           "Cor Base"?: string | null
           "Disponível em"?: string | null
+          Enable_On_Off?: boolean
           id?: number
           Imagem_Name_Site?: string | null
           Nome?: string | null

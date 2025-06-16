@@ -19,13 +19,14 @@ interface Stone {
   characteristics: string;
   image_url: string;
   image_name_site?: string;
+  enable_on_off: boolean;
 }
 
 const fetchStones = async (): Promise<Stone[]> => {
   const {
     data,
     error
-  } = await supabase.from('aralogo_simples').select('"Nome", "Categoria", "Tipo de Rocha", "Acabamentos Disponíveis", "Disponível em", "Cor Base", "Características", "Caminho da Imagem", "Imagem_Name_Site"');
+  } = await supabase.from('aralogo_simples').select('"Nome", "Categoria", "Tipo de Rocha", "Acabamentos Disponíveis", "Disponível em", "Cor Base", "Características", "Caminho da Imagem", "Imagem_Name_Site", "Enable_On_Off"');
   if (error) {
     console.error('Error fetching stones:', error);
     throw new Error('Could not fetch stones');
@@ -33,7 +34,7 @@ const fetchStones = async (): Promise<Stone[]> => {
   if (!data) {
     return [];
   }
-  return data.filter(item => item['Nome']) // Ensures the stone has a name
+  return data.filter(item => item['Nome'] && item['Enable_On_Off'] === true) // Only show enabled stones
   .map((item: any, index: number) => ({
     id: item['Nome'] || `stone-${index}`,
     name: item['Nome'] || 'N/A',
@@ -44,7 +45,8 @@ const fetchStones = async (): Promise<Stone[]> => {
     base_color: item['Cor Base'] || 'N/A',
     characteristics: item['Características'] || 'N/A',
     image_url: item['Caminho da Imagem'] || item['Nome'] || '/placeholder.svg',
-    image_name_site: item['Imagem_Name_Site'] || null
+    image_name_site: item['Imagem_Name_Site'] || null,
+    enable_on_off: item['Enable_On_Off'] || false
   }));
 };
 

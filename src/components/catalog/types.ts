@@ -10,6 +10,7 @@ export interface Stone {
   characteristics: string;
   image_filename: string;
   image_url?: string; // This is generated dynamically in the component
+  enable_on_off?: boolean; // New column to control visibility
 }
 
 export interface Filters {
@@ -19,4 +20,4 @@ export interface Filters {
   search: string;
 }
 
-export type StoneFormData = Omit<Stone, 'id' | 'image_filename' | 'image_url'>;
+export type StoneFormData = Omit<Stone, 'id' | 'image_filename' | 'image_url' | 'enable_on_off'>;
