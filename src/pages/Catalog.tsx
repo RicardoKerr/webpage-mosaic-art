@@ -1,14 +1,19 @@
+
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { LogOut, ZoomIn, ZoomOut } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { LogOut, ZoomIn, ZoomOut, Plus } from 'lucide-react';
 import FilterBar from '@/components/catalog/FilterBar';
-import { Filters, Stone } from '@/components/catalog/types';
+import StoneCard from '@/components/catalog/StoneCard';
+import StoneForm from '@/components/catalog/StoneForm';
+import ImageZoomModal from '@/components/catalog/ImageZoomModal';
+import { Filters, Stone, StoneFormData } from '@/components/catalog/types';
 import { useImageUpload } from '@/hooks/useImageUpload';
 
 const fetchStones = async (): Promise<Stone[]> => {
@@ -40,12 +45,10 @@ const fetchStones = async (): Promise<Stone[]> => {
 
 const Catalog = () => {
   const navigate = useNavigate();
-  const {
-    toast
-  } = useToast();
-  const {
-    getImageUrl
-  } = useImageUpload();
+  const { toast } = useToast();
+  const { uploadImage, getImageUrl } = useImageUpload();
+  const queryClient = useQueryClient();
+  
   const [user, setUser] = useState<{
     id: string;
     email: string;
@@ -53,6 +56,9 @@ const Catalog = () => {
     status: string;
   } | null>(null);
   const [zoomedImage, setZoomedImage] = useState<string | null>(null);
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [editingStone, setEditingStone] = useState<Stone | null>(null);
+  const [uploadingImages, setUploadingImages] = useState<Set<string>>(new Set());
   
   useEffect(() => {
     const storedUser = localStorage.getItem('aralogo_user');
@@ -111,6 +117,172 @@ const Catalog = () => {
       base_color: 'all'
     });
   };
+
+  // Add Stone Mutation
+  const addStoneMutation = useMutation({
+    mutationFn: async (stoneData: StoneFormData) => {
+      const { data, error } = await supabase
+        .from('aralogo_simples')
+        .insert([{
+          'Nome': stoneData.name,
+          'Categoria': stoneData.category,
+          'Tipo de Rocha': stoneData.rock_type,
+          'Acabamentos Disponíveis': stoneData.finishes,
+          'Disponível em': stoneData.available_in,
+          'Cor Base': stoneData.base_color,
+          'Características': stoneData.characteristics,
+          'Enable_On_Off': true
+        }])
+        .select();
+      
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['aralogo_simples'] });
+      setIsFormOpen(false);
+      toast({
+        title: "Pedra adicionada com sucesso!",
+        description: "A nova pedra foi cadastrada no catálogo."
+      });
+    },
+    onError: (error) => {
+      console.error('Error adding stone:', error);
+      toast({
+        title: "Erro ao adicionar pedra",
+        description: "Não foi possível adicionar a pedra. Tente novamente.",
+        variant: "destructive"
+      });
+    }
+  });
+
+  // Update Stone Mutation
+  const updateStoneMutation = useMutation({
+    mutationFn: async ({ id, stoneData }: { id: string, stoneData: StoneFormData }) => {
+      const { data, error } = await supabase
+        .from('aralogo_simples')
+        .update({
+          'Nome': stoneData.name,
+          'Categoria': stoneData.category,
+          'Tipo de Rocha': stoneData.rock_type,
+          'Acabamentos Disponíveis': stoneData.finishes,
+          'Disponível em': stoneData.available_in,
+          'Cor Base': stoneData.base_color,
+          'Características': stoneData.characteristics
+        })
+        .eq('Nome', id)
+        .select();
+      
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['aralogo_simples'] });
+      setIsFormOpen(false);
+      setEditingStone(null);
+      toast({
+        title: "Pedra atualizada com sucesso!",
+        description: "As informações da pedra foram atualizadas."
+      });
+    },
+    onError: (error) => {
+      console.error('Error updating stone:', error);
+      toast({
+        title: "Erro ao atualizar pedra",
+        description: "Não foi possível atualizar a pedra. Tente novamente.",
+        variant: "destructive"
+      });
+    }
+  });
+
+  // Delete Stone Mutation
+  const deleteStoneMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from('aralogo_simples')
+        .delete()
+        .eq('Nome', id);
+      
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['aralogo_simples'] });
+      toast({
+        title: "Pedra removida com sucesso!",
+        description: "A pedra foi removida do catálogo."
+      });
+    },
+    onError: (error) => {
+      console.error('Error deleting stone:', error);
+      toast({
+        title: "Erro ao remover pedra",
+        description: "Não foi possível remover a pedra. Tente novamente.",
+        variant: "destructive"
+      });
+    }
+  });
+
+  const handleAddStone = () => {
+    setEditingStone(null);
+    setIsFormOpen(true);
+  };
+
+  const handleEditStone = (stone: Stone) => {
+    setEditingStone(stone);
+    setIsFormOpen(true);
+  };
+
+  const handleDeleteStone = (id: string) => {
+    if (window.confirm('Tem certeza que deseja remover esta pedra?')) {
+      deleteStoneMutation.mutate(id);
+    }
+  };
+
+  const handleFormSubmit = (stoneData: StoneFormData) => {
+    if (editingStone) {
+      updateStoneMutation.mutate({ id: editingStone.id, stoneData });
+    } else {
+      addStoneMutation.mutate(stoneData);
+    }
+  };
+
+  const handleImageUpload = async (file: File, stoneId: string) => {
+    setUploadingImages(prev => new Set(prev).add(stoneId));
+    
+    try {
+      const imageUrl = await uploadImage(file, stoneId);
+      
+      const { error } = await supabase
+        .from('aralogo_simples')
+        .update({
+          'Caminho da Imagem': imageUrl,
+          'Imagem_Name_Site': file.name
+        })
+        .eq('Nome', stoneId);
+
+      if (error) throw error;
+
+      queryClient.invalidateQueries({ queryKey: ['aralogo_simples'] });
+      
+      toast({
+        title: "Imagem carregada com sucesso!",
+        description: "A imagem foi associada à pedra."
+      });
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      toast({
+        title: "Erro ao carregar imagem",
+        description: "Não foi possível carregar a imagem. Tente novamente.",
+        variant: "destructive"
+      });
+    } finally {
+      setUploadingImages(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(stoneId);
+        return newSet;
+      });
+    }
+  };
   
   const filteredStones = stones.filter(stone => {
     const searchRegex = new RegExp(filters.search, 'i');
@@ -136,18 +308,25 @@ const Catalog = () => {
       <p className="text-red-500">Erro ao carregar as pedras. Tente novamente.</p>
     </div>;
   }
-  return <div className="min-h-screen bg-white">
+
+  return (
+    <div className="min-h-screen bg-white">
       <header className="flex items-center justify-between p-6 border-b border-gray-200">
         <div className="flex items-center">
           <h1 className="text-2xl font-bold text-gray-900">Natural Stones Catalog</h1>
         </div>
 
         {/* User Info and Logout */}
-        {user && <div className="flex items-center gap-4">
-            {user.is_admin && <span className="flex items-center px-4 py-1 rounded-full bg-yellow-50 border border-yellow-200 text-yellow-800 font-medium text-sm gap-1">
-                <svg className="h-4 w-4 text-yellow-700 mr-1" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4V8a4 4 0 1 0-8 0v0c0 2.21 1.79 4 4 4Zm0 0v6m-6 0a6 6 0 0 1 12 0H6Z" /></svg>
+        {user && (
+          <div className="flex items-center gap-4">
+            {user.is_admin && (
+              <span className="flex items-center px-4 py-1 rounded-full bg-yellow-50 border border-yellow-200 text-yellow-800 font-medium text-sm gap-1">
+                <svg className="h-4 w-4 text-yellow-700 mr-1" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                  <path d="M12 12c2.21 0 4-1.79 4-4V8a4 4 0 1 0-8 0v0c0 2.21 1.79 4 4 4Zm0 0v6m-6 0a6 6 0 0 1 12 0H6Z" />
+                </svg>
                 Administrator
-              </span>}
+              </span>
+            )}
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -169,22 +348,60 @@ const Catalog = () => {
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
-          </div>}
+          </div>
+        )}
       </header>
 
       <div className="max-w-7xl mx-auto p-6">
-        <FilterBar filters={filters} onFilterChange={handleFilterChange} onClearFilters={clearFilters} existingCategories={existingCategories} existingRockTypes={existingRockTypes} existingColors={existingColors} filteredCount={filteredStones.length} totalCount={stones.length} />
+        <div className="flex justify-between items-center mb-6">
+          <div className="flex-1">
+            <FilterBar 
+              filters={filters} 
+              onFilterChange={handleFilterChange} 
+              onClearFilters={clearFilters} 
+              existingCategories={existingCategories} 
+              existingRockTypes={existingRockTypes} 
+              existingColors={existingColors} 
+              filteredCount={filteredStones.length} 
+              totalCount={stones.length} 
+            />
+          </div>
+          
+          {user?.is_admin && (
+            <Button onClick={handleAddStone} className="ml-4">
+              <Plus className="mr-2 h-4 w-4" />
+              Add Stone
+            </Button>
+          )}
+        </div>
 
-        {/* Grid com layout igual ao StoneViewer */}
+        {/* Grid com StoneCard components */}
         <div className="mt-6">
-          {filteredStones.length === 0 ? <div className="text-center py-10">
+          {filteredStones.length === 0 ? (
+            <div className="text-center py-10">
               <p className="text-gray-700 font-semibold">Nenhuma pedra encontrada.</p>
               <p className="text-gray-500">Tente ajustar os filtros de pesquisa.</p>
-            </div> : <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {filteredStones.map(stone => {
-            const imageIdentifier = stone.image_filename || stone.name;
-            const imageUrl = getImageUrl(imageIdentifier);
-            return <div key={stone.id} className="produto border border-gray-200 rounded-lg overflow-hidden shadow-lg bg-white">
+                const imageIdentifier = stone.image_filename || stone.name;
+                const imageUrl = getImageUrl(imageIdentifier);
+                const isUploading = uploadingImages.has(stone.id);
+
+                return user?.is_admin ? (
+                  <StoneCard
+                    key={stone.id}
+                    stone={stone}
+                    imageUrl={imageUrl}
+                    isUploading={isUploading}
+                    onEdit={handleEditStone}
+                    onDelete={handleDeleteStone}
+                    onImageUpload={handleImageUpload}
+                    onImageZoom={handleImageZoom}
+                  />
+                ) : (
+                  <div key={stone.id} className="produto border border-gray-200 rounded-lg overflow-hidden shadow-lg bg-white">
                     <div className="p-6">
                       <h1 className="text-2xl font-bold text-gray-800 border-b-2 border-gray-800 pb-3 mb-4">
                         {stone.name}
@@ -195,12 +412,23 @@ const Catalog = () => {
                       </div>
                       
                       <div className="text-center my-8 relative">
-                        <img src={imageUrl} alt={stone.name} className="w-full h-64 object-cover mx-auto border border-gray-300 rounded-lg shadow-lg cursor-pointer" onClick={() => handleImageZoom(imageUrl)} onError={e => {
-                    const target = e.target as HTMLImageElement;
-                    console.error('Error loading image:', imageUrl, 'for stone:', stone.name);
-                    target.src = '/placeholder.svg';
-                  }} />
-                        <Button variant="outline" size="sm" className="absolute top-2 right-2" onClick={() => handleImageZoom(imageUrl)}>
+                        <img 
+                          src={imageUrl} 
+                          alt={stone.name} 
+                          className="w-full h-64 object-cover mx-auto border border-gray-300 rounded-lg shadow-lg cursor-pointer" 
+                          onClick={() => handleImageZoom(imageUrl)}
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            console.error('Error loading image:', imageUrl, 'for stone:', stone.name);
+                            target.src = '/placeholder.svg';
+                          }}
+                        />
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="absolute top-2 right-2"
+                          onClick={() => handleImageZoom(imageUrl)}
+                        >
                           <ZoomIn className="h-4 w-4" />
                         </Button>
                       </div>
@@ -217,22 +445,37 @@ const Catalog = () => {
                         </ul>
                       </div>
                     </div>
-                  </div>;
-          })}
-            </div>}
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
 
-        {/* Zoom Modal - igual ao StoneViewer */}
-        {zoomedImage && <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50" onClick={closeZoom}>
-            <div className="relative w-[80vw] h-[80vh] p-4">
-              <Button variant="outline" size="sm" className="absolute top-2 right-2 z-10" onClick={closeZoom}>
-                <ZoomOut className="h-4 w-4" />
-              </Button>
-              <img src={zoomedImage} alt="Zoom" className="w-full h-full object-contain" onClick={e => e.stopPropagation()} />
-            </div>
-          </div>}
+        {/* Stone Form Dialog */}
+        <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle>
+                {editingStone ? 'Edit Stone' : 'Add New Stone'}
+              </DialogTitle>
+            </DialogHeader>
+            <StoneForm
+              stone={editingStone}
+              onSubmit={handleFormSubmit}
+              onCancel={() => setIsFormOpen(false)}
+            />
+          </DialogContent>
+        </Dialog>
+
+        {/* Image Zoom Modal */}
+        <ImageZoomModal 
+          imageUrl={zoomedImage} 
+          onClose={closeZoom} 
+        />
       </div>
-    </div>;
+    </div>
+  );
 };
 
 export default Catalog;
