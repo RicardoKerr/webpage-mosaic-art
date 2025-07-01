@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
@@ -59,6 +58,15 @@ const Catalog = () => {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingStone, setEditingStone] = useState<Stone | null>(null);
   const [uploadingImages, setUploadingImages] = useState<Set<string>>(new Set());
+  const [formData, setFormData] = useState<StoneFormData>({
+    name: '',
+    category: '',
+    rock_type: '',
+    finishes: '',
+    available_in: '',
+    base_color: '',
+    characteristics: ''
+  });
   
   useEffect(() => {
     const storedUser = localStorage.getItem('aralogo_user');
@@ -118,6 +126,18 @@ const Catalog = () => {
     });
   };
 
+  const resetForm = () => {
+    setFormData({
+      name: '',
+      category: '',
+      rock_type: '',
+      finishes: '',
+      available_in: '',
+      base_color: '',
+      characteristics: ''
+    });
+  };
+
   // Add Stone Mutation
   const addStoneMutation = useMutation({
     mutationFn: async (stoneData: StoneFormData) => {
@@ -141,6 +161,7 @@ const Catalog = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['aralogo_simples'] });
       setIsFormOpen(false);
+      resetForm();
       toast({
         title: "Pedra adicionada com sucesso!",
         description: "A nova pedra foi cadastrada no catálogo."
@@ -180,6 +201,7 @@ const Catalog = () => {
       queryClient.invalidateQueries({ queryKey: ['aralogo_simples'] });
       setIsFormOpen(false);
       setEditingStone(null);
+      resetForm();
       toast({
         title: "Pedra atualizada com sucesso!",
         description: "As informações da pedra foram atualizadas."
@@ -224,11 +246,21 @@ const Catalog = () => {
 
   const handleAddStone = () => {
     setEditingStone(null);
+    resetForm();
     setIsFormOpen(true);
   };
 
   const handleEditStone = (stone: Stone) => {
     setEditingStone(stone);
+    setFormData({
+      name: stone.name,
+      category: stone.category,
+      rock_type: stone.rock_type,
+      finishes: stone.finishes,
+      available_in: stone.available_in,
+      base_color: stone.base_color,
+      characteristics: stone.characteristics
+    });
     setIsFormOpen(true);
   };
 
@@ -238,12 +270,25 @@ const Catalog = () => {
     }
   };
 
-  const handleFormSubmit = (stoneData: StoneFormData) => {
+  const handleInputChange = (key: keyof StoneFormData, value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      [key]: value
+    }));
+  };
+
+  const handleSave = () => {
     if (editingStone) {
-      updateStoneMutation.mutate({ id: editingStone.id, stoneData });
+      updateStoneMutation.mutate({ id: editingStone.id, stoneData: formData });
     } else {
-      addStoneMutation.mutate(stoneData);
+      addStoneMutation.mutate(formData);
     }
+  };
+
+  const handleCancel = () => {
+    setIsFormOpen(false);
+    setEditingStone(null);
+    resetForm();
   };
 
   const handleImageUpload = async (file: File, stoneId: string) => {
@@ -461,9 +506,20 @@ const Catalog = () => {
               </DialogTitle>
             </DialogHeader>
             <StoneForm
-              stone={editingStone}
-              onSubmit={handleFormSubmit}
-              onCancel={() => setIsFormOpen(false)}
+              isAddingNew={!editingStone}
+              editingStone={editingStone}
+              formData={formData}
+              onInputChange={handleInputChange}
+              onSave={handleSave}
+              onCancel={handleCancel}
+              onImageUpload={handleImageUpload}
+              onImageZoom={handleImageZoom}
+              getImageUrl={getImageUrl}
+              isUploading={uploadingImages.has(editingStone?.id || '')}
+              isSaving={addStoneMutation.isPending || updateStoneMutation.isPending}
+              existingCategories={existingCategories}
+              existingRockTypes={existingRockTypes}
+              existingColors={existingColors}
             />
           </DialogContent>
         </Dialog>

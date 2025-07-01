@@ -423,6 +423,80 @@ export type Database = {
         }
         Relationships: []
       }
+      scraped_data: {
+        Row: {
+          config_id: string | null
+          created_at: string
+          data: Json
+          id: string
+          scraping_type: string
+          status: string
+          url: string
+          user_id: string
+        }
+        Insert: {
+          config_id?: string | null
+          created_at?: string
+          data: Json
+          id?: string
+          scraping_type: string
+          status?: string
+          url: string
+          user_id: string
+        }
+        Update: {
+          config_id?: string | null
+          created_at?: string
+          data?: Json
+          id?: string
+          scraping_type?: string
+          status?: string
+          url?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "scraped_data_config_id_fkey"
+            columns: ["config_id"]
+            isOneToOne: false
+            referencedRelation: "scraping_configs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      scraping_configs: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          needs_auth: boolean
+          scraping_type: string
+          updated_at: string
+          url: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          needs_auth?: boolean
+          scraping_type: string
+          updated_at?: string
+          url: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          needs_auth?: boolean
+          scraping_type?: string
+          updated_at?: string
+          url?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       suppliers: {
         Row: {
           contact_email: string | null
